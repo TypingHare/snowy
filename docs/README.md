@@ -2,8 +2,9 @@
 
 ## Table of Contents
 
-- [Cloud Instance](./cloud_instance.md)
+- [Server](./server.md)
 - [Package Manager](./package_manager.md)
 - [Reverse Proxy](./reverse_proxy.md)
 - [TLS Certificate](./tls_certificate.md)
+- [Domain](./domain.md)
 - [CLI Tools](./cli_tools.md)
