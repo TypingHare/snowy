@@ -1,0 +1,11 @@
+[Unit]
+Description=minecraft-server
+
+[Service]
+WorkingDirectory=/home/james/minecraft/kingdom-and-adventure
+ExecStart=/home/james/minecraft/kingdom-and-adventure/run.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

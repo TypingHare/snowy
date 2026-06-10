@@ -1,0 +1,31 @@
+#cloud-config
+
+# Create a non-root user with sudo and your SSH key.
+users:
+  - name: james
+    groups: sudo
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh_authorized_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDAEgp0wcbFuZuF667AIxDNbbEn2BNr/ofoSrwBHvyhU james@snowy | digital ocean | 2026-06"
+
+# Update and upgrade packages on first boot.
+package_update: true
+package_upgrade: true
+
+# Install packages
+packages:
+  - ufw
+  - default-jdk
+
+# Create a swap file to improve performance.
+# Specifically, this creates `/swapfile` with a size of 4GB, allocated by `fallocate`. Then, it runs `mkswap` on it and then `swapon` to enable it. Finally, it adds an entry to `/etc/fstab` so it's re-enabled on reboot
+swap:
+  filename: /swapfile
+  size: 4G
+  maxsize: 4G
+
+# Run commands
+runcmd:
+  - install -d -o james -g james /home/james/minecraft
+  - install -d -o james -g james /home/james/.config/systemd/user
