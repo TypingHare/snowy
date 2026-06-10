@@ -6,11 +6,11 @@ cd "$(dirname "$0")"
 
 # --- Configuration --------------------------------------------------------- #
 
-GAME_NAME="kingdom-and-adventure"
+TEMP_DIR=".temp"
+GAME_NAME=$(<"$TEMP_DIR/game-name")
 GAME_DIRECTORY=$(realpath "../$GAME_NAME")
 
 SSH_KEY_FILE="$HOME/.ssh/id_ed25519_digital_ocean"
-TEMP_DIR=".temp"
 
 # Recover the droplet ID and IP that start-minecraft-droplet.sh persisted.
 DROPLET_ID=$(<"$TEMP_DIR/minecraft-droplet-id")

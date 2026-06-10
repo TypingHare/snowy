@@ -4,10 +4,24 @@ set -euo pipefail
 # Change to the directory containing this script so all relative paths resolve.
 cd "$(dirname "$0")"
 
-# --- Configuration --------------------------------------------------------- #
+# --- Game Directory Verification ------------------------------------------- #
 
-GAME_NAME="kingdom-and-adventure"
+GAME_NAME="${1:-}"
+if [ -z "$GAME_NAME" ]; then
+    echo "Usage: $(basename "$0") <game-name>" >&2
+    echo "Example: $(basename "$0") kingdom-and-adventure" >&2
+    exit 1
+fi
+
 GAME_DIRECTORY=$(realpath "../$GAME_NAME")
+if [ ! -d "$GAME_DIRECTORY" ]; then
+    echo "Error: game directory \"$GAME_DIRECTORY\" does not exist." >&2
+    exit 1
+fi
+
+echo "Game directory: $GAME_DIRECTORY"
+
+# --- Configuration --------------------------------------------------------- #
 
 DROPLET_NAME="minecraft-server"
 PROJECT_ID="d1aedfff-273b-40af-aa1a-c49c3d748246"
@@ -44,8 +58,10 @@ DROPLET_PUBLIC_IPV4=$(doctl compute droplet get "$DROPLET_ID" \
 echo "Created the Minecraft droplet (ID: $DROPLET_ID; public IPv4: \
 $DROPLET_PUBLIC_IPV4)."
 
-# Persist the droplet ID and IP so stop-minecraft-droplet.sh can find them.
+# Persist the game name, droplet ID, and IP so `stop-minecraft-droplet.sh` can
+# find them.
 mkdir -p "$TEMP_DIR"
+echo "$GAME_NAME" >"$TEMP_DIR/game-name"
 echo "$DROPLET_ID" >"$TEMP_DIR/minecraft-droplet-id"
 echo "$DROPLET_PUBLIC_IPV4" >"$TEMP_DIR/minecraft-droplet-public-ipv4"
 
