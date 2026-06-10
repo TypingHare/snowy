@@ -9,6 +9,7 @@ SSH_KEY_ID="56975812"
 # Change to the directory containing this script.
 cd "$(dirname "$0")" || exit 1
 
+# Create a Minecraft droplet using `doctl`. Wait until the droplet is active.
 echo "Creating Minecraft droplet..."
 DROPLET_ID=$(doctl compute droplet create minecraft-server \
     --image debian-13-x64 \
@@ -36,6 +37,18 @@ echo "$DROPLET_ID" >"$TEMP_DIR/minecraft-droplet-id"
 
 # Save the Minecraft droplet public IPv4 address to a temporary file.
 echo "$DROPLET_PUBLIC_IPV4" >"$TEMP_DIR/minecraft-droplet-public-ipv4"
+
+# Wait until sshd is accepting connections on the droplet.
+echo "Waiting for SSH to become available on the droplet..."
+until ssh -i ~/.ssh/id_ed25519_digital_ocean \
+    -o StrictHostKeyChecking=accept-new \
+    -o ConnectTimeout=5 \
+    -o BatchMode=yes \
+    root@"$DROPLET_PUBLIC_IPV4" \
+    true 2>/dev/null; do
+    sleep 3
+done
+echo "SSH is available on the droplet."
 
 # Wait for cloud-init to finish on the Minecraft droplet.
 echo "Waiting for cloud-init to finish on the droplet..."
@@ -85,3 +98,6 @@ ssh -t -i ~/.ssh/id_ed25519_digital_ocean \
     james@"$DROPLET_PUBLIC_IPV4" \
     'systemctl --user start minecraft-server'
 echo "Started the Minecraft server on the droplet."
+
+# Write a message to indicate that the Minecraft server has been hosted.
+echo "Minecraft server \"$GAME_NAME\" is now running at $DROPLET_PUBLIC_IPV4!"
