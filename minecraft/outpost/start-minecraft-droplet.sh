@@ -84,7 +84,8 @@ echo "SSH is available on the droplet."
 
 # Wait for cloud-init to finish so the james user, swap, and packages are ready.
 echo "Waiting for cloud-init to finish on the droplet..."
-ssh -i "$SSH_KEY_FILE" root@"$DROPLET_PUBLIC_IPV4" 'cloud-init status --wait'
+ssh -i "$SSH_KEY_FILE" root@"$DROPLET_PUBLIC_IPV4" \
+    'cloud-init status --wait >/dev/null'
 echo "cloud-init has finished on the droplet."
 
 # --- Upload the game and unit file ----------------------------------------- #
