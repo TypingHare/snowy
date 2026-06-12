@@ -62,7 +62,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
 ## Players Should Know
 
 1. Players can send a teleport request to another player with the `/tpa <target-player-id>` command from FTB Essentials. Once the target accepts the request, the requesting player is teleported to them. **This command has an 8-minute cooldown.**
-2. Each player can choose their own Apotheosis world tier. Open the world tier panel with the **Ctrl + T** keybind. We strongly discourage selecting a lower world tier before fighting bosses — it makes the game easier but far less fun.
+2. Each player can choose their own Apotheosis world tier. Open the world tier panel with the **Ctrl + T** keybind. We strongly discourage selecting a lower world tier before fighting bosses, which makes the game easier but far less fun.
 
 ## Mod List with Dependencies
 
