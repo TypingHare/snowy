@@ -1,14 +1,68 @@
 # Kingdom & Adventure
 
+A Minecraft `1.21.1` Neoforge modpack that blends colony building with dungeon exploration. Found your own kingdom with [MineColonies][mine-colonies], gear up through [Apotheosis][apotheosis], and conquer dungeons from [When Dungeons Arise][when-dungeons-arise] to [L-Ender's Cataclysm][l-enders-cataclysm].
+
 ## Installation
 
 **Neoforge** `21.11.233` or higher for Minecraft `1.21.1` is required to run this modpack. Please download the Neoforge installer from the [official website][neoforge] and follow the instructions to install it.
 
+Please make sure Java 21 installed. For clients, please make sure the Minecraft Launcher is closed when installing Neoforge.
+
 ### macOS Client
+
+Double-click the Neoforge JAR file. macOS will block it with a warning prompting you to move it to the Trash — click "Done" instead. Open Settings, go to Privacy & Security, scroll to the bottom, and click "Open Anyway". Confirm by clicking "Open Anyway" once more in the dialog that follows. Finally, click "Proceed" in the Neoforge installer window.
 
 ### Windows Client
 
+Double-click the Neoforge JAR file to launch the installer. If the file opens as an archive (e.g. in 7-Zip or WinRAR) instead of running, right-click it, choose "Open with", and pick the Java Platform SE binary. If Windows SmartScreen blocks the file with a "Windows protected your PC" warning, click "More info" and then "Run anyway". In the installer window, make sure "Install client" is selected, confirm the path points to your `.minecraft` folder, and click "Proceed".
+
 ### Server (Linux)
+
+Move the Neoforge installer to the server, `cd` into the directory where you want the server to be installed, and run the following command (assuming that the Neoforge installer is named `neoforge-installer.jar`):
+
+```bash
+java -jar neoforge-installer.jar --install-server .
+```
+
+Then, accept the [EULA (End User License Agreement)][eula] with the following command:
+
+```bash
+echo "eula=true" > eula.txt
+```
+
+## Modpack Description
+
+This modpack allows players to build their own kingdoms and adventure through a world filled with various dungeons. With [MineColonies][mine-colonies], players can create and manage their own colony, where they can assign jobs to their citizens, build structures, and expand their territory.
+
+In the early stages of a colony, players have to gather a lot of resources to build it up, which is where [Sophisticated Backpacks][sophisticated-backpacks] and [Waystones][waystones] come into play. Sophisticated Backpacks provide extended inventory space, allowing players to carry more items while exploring and gathering resources. Waystones, on the other hand, allow players to teleport between different locations in the world, making it easier to navigate and gather resources from different biomes.
+
+As the colony becomes more developed, it grows self-sufficient and players can get most necessary resources from it. At this point, players can shift focus to adventuring and exploring the world. [When Dungeons Arise][when-dungeons-arise] and [When Dungeons Arise: Seven Seas][when-dungeons-arise-seven-seas] add various dungeons to the world, each with its own unique challenges and rewards. Generally, bigger dungeons are harder to conquer but provide better loot.
+
+Some giant dungeons are almost impossible to conquer with top-tier vanilla gear, so players will have to rely on [Apotheosis][apotheosis] to enhance their gear with powerful enchantments and attributes. Apotheosis redesigns the enchanting table, introduces gems that can be socketed into gear, and adds affixes that can make gear far more powerful. With the help of Apotheosis, players can conquer dungeons that were previously out of reach.
+
+In the late game, as players reach the highest tier in Apotheosis, they can start conquering the most difficult dungeons in the world, such as [L-Ender's Cataclysm][l-enders-cataclysm]. This mod adds a new dimension filled with powerful mobs and challenging dungeons that require top-tier gear and strategy to conquer.
+
+When exploring dungeons in multi-player mode, every player normally sees the same loot in a shared chest, which can leave whoever arrives later feeling shortchanged. With [Lootr][lootr], each player gets their own roll from the same chest, making it more fun and rewarding to explore dungeons with friends.
+
+Players who have been playing vanilla Minecraft for too long may be tired of the structures in the game, so [YUNG's Better Mineshafts][yungs-better-mineshafts] and other "YUNG's mods" ([YUNG's Better Ocean Monument][yungs-better-ocean-monuments], [YUNG's Better Dungeons][yungs-better-dungeons], [YUNG's Better End Island][yungs-better-end-island], [YUNG's Better Witch Huts][yungs-better-witch-huts], [YUNG's Better Strongholds][yungs-better-strongholds], [YUNG's Better Nether Fortresses][yungs-better-nether-fortresses], [YUNG's Better Desert Temples][yungs-better-desert-temples], and [YUNG's Better Jungle Temples][yungs-better-jungle-temples]) add more variety to the structures in the world, making exploration more exciting and rewarding.
+
+[Alex's Mobs][alexs-mobs] adds a variety of new mobs to the game, each with its own unique behaviors and drops. This mod adds more life to the world and provides players with new challenges and rewards when exploring.
+
+Other mods in the modpack are small, but they improve the quality of life and make the game more enjoyable:
+
+- [Better Combat][better-combat] improves the combat system in the game, making it more responsive and engaging.
+- [AttributeFix][attribute-fix] fixes various issues with attributes in the game, making them more consistent and balanced.
+- [Patchouli][patchouli] allows mod developers to create in-game documentation for their mods, making it easier for players to learn how to use them.
+- [Apple Skin][apple-skin] adds a visual indicator for how much hunger and saturation food items will restore, making it easier for players to manage their hunger.
+- [Carry On][carry-on] allows players to pick up and carry blocks and entities, making it easier to move things around in the world.
+- [FTB Essentials][ftb-essentials] adds various quality of life features to the game, such as a minimap, waypoints, and a chat system. However, for the sake of balance, the server only enables the `tpa` command.
+- [ModernFix][modern-fix] and [FerriteCore][ferrite-core] optimize the game and improve performance, making it run smoother and more efficiently.
+- [Enchantment Descriptions][enchantment-descriptions] adds descriptions to enchantments, making it easier for players to understand what they do and how to use them effectively.
+
+## Players Should Know
+
+1. Players can send a teleport request to another player with the `/tpa <target-player-id>` command from FTB Essentials. Once the target accepts the request, the requesting player is teleported to them. **This command has an 8-minute cooldown.**
+2. Each player can choose their own Apotheosis world tier. Open the world tier panel with the **Ctrl + T** keybind. We strongly discourage selecting a lower world tier before fighting bosses — it makes the game easier but far less fun.
 
 ## Mod List with Dependencies
 
@@ -31,6 +85,10 @@
   - [Lionfish API][lionfish-api]
 - [YUNG's Better Mineshafts][yungs-better-mineshafts]
   - [YUNG's API][yungs-api]
+- [YUNG's Better Ocean Monument][yungs-better-ocean-monuments]
+- [YUNG's Better Dungeons][yungs-better-dungeons]
+- [YUNG's Better End Island][yungs-better-end-island]
+- [YUNG's Better Witch Huts][yungs-better-witch-huts]
 - [YUNG's Better Strongholds][yungs-better-strongholds]
 - [YUNG's Better Nether Fortresses][yungs-better-nether-fortresses]
 - [YUNG's Better Desert Temples][yungs-better-desert-temples]
@@ -74,7 +132,7 @@
 
 - [spark][spark]
 
-## Recommended Kind Binds
+## Recommended Key Binds
 
 In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit kind binds.
 
@@ -82,23 +140,24 @@ In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit k
   - Load Hotbar Activator - **Not Bound**
   - Save Hotbar Activator - **Not Bound**
 - Apotheosis
-  - Change Radial Mining Mode - _\<Not Bound\>_
-  - Compare Hovered Equipment - _\<Not Bound\>_
-  - Link Hovered Item to Chat - _\<Not Bound\>_
+  - Change Radial Mining Mode - **Not Bound**
+  - Compare Hovered Equipment - **Not Bound**
+  - Link Hovered Item to Chat - **Not Bound**
   - Open World Tier Select - **Ctrl + T**
 - Iris
-  - Reload Shaders - _\<Not Bound\>_
-  - Shaderpack Selection Screen - _\<Not Bound\>_
-  - Toggle Shaders - _\<Not Bound\>_
-  - Wireframe (SP only) - _\<Not Bound\>_
+  - Reload Shaders - **Not Bound**
+  - Shaderpack Selection Screen - **Not Bound**
+  - Toggle Shaders - **Not Bound**
+  - Wireframe (SP only) - **Not Bound**
 - Jade
-  - Narrate - _\<Not Bound\>_
-  - Open Config - _\<Not Bound\>_
-  - Show Details - _\<Not Bound\>_
-  - Show Overlay - _\<Not Bound\>_
-  - Toggle Fluid - _\<Not Bound\>_
+  - Narrate - **Not Bound**
+  - Open Config - **Not Bound**
+  - Show Details - **Not Bound**
+  - Show Overlay - **Not Bound**
+  - Toggle Fluid - **Not Bound**
 
 [neoforge]: https://neoforged.net
+[eula]: https://www.minecraft.net/en-us/eula
 [mine-colonies]: https://www.curseforge.com/minecraft/mc-mods/minecolonies
 [domum-ornamentum]: https://www.curseforge.com/minecraft/mc-mods/domum-ornamentum
 [structurize]: https://www.curseforge.com/minecraft/mc-mods/structurize
@@ -116,6 +175,10 @@ In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit k
 [lionfish-api]: https://www.curseforge.com/minecraft/mc-mods/lionfish-api
 [yungs-better-mineshafts]: https://modrinth.com/mod/yungs-better-mineshafts
 [yungs-api]: https://modrinth.com/mod/yungs-api
+[yungs-better-ocean-monuments]: https://modrinth.com/mod/yungs-better-ocean-monuments
+[yungs-better-dungeons]: https://modrinth.com/mod/yungs-better-dungeons
+[yungs-better-end-island]: https://modrinth.com/mod/yungs-better-end-island
+[yungs-better-witch-huts]: https://modrinth.com/mod/yungs-better-witch-huts
 [yungs-better-strongholds]: https://modrinth.com/mod/yungs-better-strongholds
 [yungs-better-nether-fortresses]: https://modrinth.com/mod/yungs-better-nether-fortresses
 [yungs-better-desert-temples]: https://modrinth.com/mod/yungs-better-desert-temples
