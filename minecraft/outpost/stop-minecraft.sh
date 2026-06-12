@@ -13,7 +13,6 @@ GAME_DIRECTORY=$(realpath "../$GAME_NAME")
 SSH_KEY_FILE="$HOME/.ssh/id_ed25519_digital_ocean"
 
 # Recover the droplet ID and IP that start-minecraft-droplet.sh persisted.
-DROPLET_ID=$(<"$TEMP_DIR/minecraft-droplet-id")
 DROPLET_PUBLIC_IPV4=$(<"$TEMP_DIR/minecraft-droplet-public-ipv4")
 
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -47,9 +46,7 @@ echo "Downloaded the game directory from the droplet."
 
 # --- Delete the droplet ---------------------------------------------------- #
 
-echo "Deleting the Minecraft droplet (ID: $DROPLET_ID)..."
-doctl compute droplet delete "$DROPLET_ID" --force
-echo "Deleted the Minecraft droplet (ID: $DROPLET_ID)."
+bash delete-minecraft-droplet.sh
 
 # --- Install the snapshot locally ------------------------------------------ #
 

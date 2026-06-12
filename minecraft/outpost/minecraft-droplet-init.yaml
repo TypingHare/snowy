@@ -1,6 +1,6 @@
 #cloud-config
 
-# Create a non-root user with sudo and your SSH key.
+# Create a non-root user `james` with sudo and a SSH public key.
 users:
   - name: james
     groups: sudo
@@ -18,7 +18,7 @@ packages:
   - ufw
   - default-jdk
 
-# Create a swap file to improve performance.
+# Create a swap file and enable virtual memory.
 # Specifically, this creates `/swapfile` with a size of 4GB, allocated by `fallocate`. Then, it runs `mkswap` on it and then `swapon` to enable it. Finally, it adds an entry to `/etc/fstab` so it's re-enabled on reboot
 swap:
   filename: /swapfile
