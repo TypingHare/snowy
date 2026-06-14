@@ -1,20 +1,20 @@
 # Kingdom & Adventure
 
-A Minecraft `1.21.1` Neoforge modpack that blends colony building with dungeon exploration. Found your own kingdom with [MineColonies][mine-colonies], gear up through [Apotheosis][apotheosis], and conquer dungeons from [When Dungeons Arise][when-dungeons-arise] to [L-Ender's Cataclysm][l-enders-cataclysm].
+**Kingdom & Adventure** is a Minecraft `1.21.1` Neoforge modpack that blends colony building with dungeon exploration. Here, you can found and manage your own kingdom with [MineColonies][mine-colonies], gear up through [Apotheosis][apotheosis], and conquer dungeons from [When Dungeons Arise][when-dungeons-arise] to [L-Ender's Cataclysm][l-enders-cataclysm].
 
 ## Installation
 
-**Neoforge** `21.11.233` or higher for Minecraft `1.21.1` is required to run this modpack. Please download the Neoforge installer from the [official website][neoforge] and follow the instructions to install it.
+**Neoforge** `21.11.233` or higher for Minecraft `1.21.1` is required to run this modpack. Please download the Neoforge installer from the [official website][neoforge] and follow the instructions to install it. You can download the mod files [from Snowy (James' personal website)][mods].
 
-Please make sure Java 21 installed. For clients, please make sure the Minecraft Launcher is closed when installing Neoforge.
+Please make sure Java 21 is installed. For clients, please make sure the Minecraft Launcher is closed when installing Neoforge.
 
 ### macOS Client
 
-Double-click the Neoforge JAR file. macOS will block it with a warning prompting you to move it to the Trash — click "Done" instead. Open Settings, go to Privacy & Security, scroll to the bottom, and click "Open Anyway". Confirm by clicking "Open Anyway" once more in the dialog that follows. Finally, click "Proceed" in the Neoforge installer window.
+Double-click the Neoforge JAR file. macOS will block it with a warning prompting you to move it to the Trash — click **"Done"** instead. Open Settings, go to **"Privacy & Security"**, scroll to the bottom, and click **"Open Anyway"**. Confirm by clicking **"Open Anyway"** once more in the dialog that follows. Finally, click **"Proceed"** in the Neoforge installer window.
 
 ### Windows Client
 
-Double-click the Neoforge JAR file to launch the installer. If the file opens as an archive (e.g. in 7-Zip or WinRAR) instead of running, right-click it, choose "Open with", and pick the Java Platform SE binary. If Windows SmartScreen blocks the file with a "Windows protected your PC" warning, click "More info" and then "Run anyway". In the installer window, make sure "Install client" is selected, confirm the path points to your `.minecraft` folder, and click "Proceed".
+Double-click the Neoforge JAR file to launch the installer. If the file opens as an archive (e.g. in 7-Zip or WinRAR) instead of running, right-click it, choose **"Open with"**, and pick the Java Platform SE binary. If Windows SmartScreen blocks the file with a **"Windows protected your PC"** warning, click **"More info"** and then **"Run anyway"**. In the installer window, make sure **"Install client"** is selected, confirm the path points to your `.minecraft` folder, and click **"Proceed"**.
 
 ### Server (Linux)
 
@@ -30,6 +30,36 @@ Then, accept the [EULA (End User License Agreement)][eula] with the following co
 echo "eula=true" > eula.txt
 ```
 
+Edit the `user_jvm_args.txt` file to set the appropriate JVM arguments for your server. A recommended set of JVM arguments is as follows:
+
+```bash
+-Xms4G
+-Xmx8G
+-XX:+UseG1GC
+-XX:+ParallelRefProcEnabled
+-XX:MaxGCPauseMillis=200
+-XX:+UnlockExperimentalVMOptions
+-XX:+DisableExplicitGC
+-XX:+AlwaysPreTouch
+-XX:G1NewSizePercent=30
+-XX:G1MaxNewSizePercent=40
+-XX:G1HeapRegionSize=8M
+-XX:G1ReservePercent=20
+-XX:G1HeapWastePercent=5
+-XX:G1MixedGCCountTarget=4
+-XX:InitiatingHeapOccupancyPercent=15
+-XX:G1MixedGCLiveThresholdPercent=90
+-XX:SurvivorRatio=32
+-XX:+PerfDisableSharedMem
+-XX:MaxTenuringThreshold=1
+```
+
+Finally, start the server with the following command:
+
+```bash
+./run.sh
+```
+
 ## Modpack Description
 
 This modpack allows players to build their own kingdoms and adventure through a world filled with various dungeons. With [MineColonies][mine-colonies], players can create and manage their own colony, where they can assign jobs to their citizens, build structures, and expand their territory.
@@ -42,9 +72,9 @@ Some giant dungeons are almost impossible to conquer with top-tier vanilla gear,
 
 In the late game, as players reach the highest tier in Apotheosis, they can start conquering the most difficult dungeons in the world, such as [L-Ender's Cataclysm][l-enders-cataclysm]. This mod adds a new dimension filled with powerful mobs and challenging dungeons that require top-tier gear and strategy to conquer.
 
-When exploring dungeons in multi-player mode, every player normally sees the same loot in a shared chest, which can leave whoever arrives later feeling shortchanged. With [Lootr][lootr], each player gets their own roll from the same chest, making it more fun and rewarding to explore dungeons with friends.
+When exploring dungeons in multiplayer mode, every player normally sees the same loot in a shared chest, which can leave whoever arrives later feeling shortchanged. With [Lootr][lootr], each player gets their own roll from the same chest, making it more fun and rewarding to explore dungeons with friends.
 
-Players who have been playing vanilla Minecraft for too long may be tired of the structures in the game, so [YUNG's Better Mineshafts][yungs-better-mineshafts] and other "YUNG's mods" ([YUNG's Better Ocean Monument][yungs-better-ocean-monuments], [YUNG's Better Dungeons][yungs-better-dungeons], [YUNG's Better End Island][yungs-better-end-island], [YUNG's Better Witch Huts][yungs-better-witch-huts], [YUNG's Better Strongholds][yungs-better-strongholds], [YUNG's Better Nether Fortresses][yungs-better-nether-fortresses], [YUNG's Better Desert Temples][yungs-better-desert-temples], and [YUNG's Better Jungle Temples][yungs-better-jungle-temples]) add more variety to the structures in the world, making exploration more exciting and rewarding.
+Players who have been playing vanilla Minecraft for too long may be tired of the structures in the game, so [YUNG's Better Mineshafts][yungs-better-mineshafts] and other "YUNG's mods" ([YUNG's Better Ocean Monuments][yungs-better-ocean-monuments], [YUNG's Better Dungeons][yungs-better-dungeons], [YUNG's Better End Island][yungs-better-end-island], [YUNG's Better Witch Huts][yungs-better-witch-huts], [YUNG's Better Strongholds][yungs-better-strongholds], [YUNG's Better Nether Fortresses][yungs-better-nether-fortresses], [YUNG's Better Desert Temples][yungs-better-desert-temples], and [YUNG's Better Jungle Temples][yungs-better-jungle-temples]) add more variety to the structures in the world, making exploration more exciting and rewarding.
 
 [Alex's Mobs][alexs-mobs] adds a variety of new mobs to the game, each with its own unique behaviors and drops. This mod adds more life to the world and provides players with new challenges and rewards when exploring.
 
@@ -55,14 +85,14 @@ Other mods in the modpack are small, but they improve the quality of life and ma
 - [Patchouli][patchouli] allows mod developers to create in-game documentation for their mods, making it easier for players to learn how to use them.
 - [Apple Skin][apple-skin] adds a visual indicator for how much hunger and saturation food items will restore, making it easier for players to manage their hunger.
 - [Carry On][carry-on] allows players to pick up and carry blocks and entities, making it easier to move things around in the world.
-- [FTB Essentials][ftb-essentials] adds various quality of life features to the game, such as a minimap, waypoints, and a chat system. However, for the sake of balance, the server only enables the `tpa` command.
+- [FTB Essentials][ftb-essentials] adds various commands for players to set home, warp, teleport to other players, and so on. However, for the sake of balance, the server only enables the `tpa` command.
 - [ModernFix][modern-fix] and [FerriteCore][ferrite-core] optimize the game and improve performance, making it run smoother and more efficiently.
 - [Enchantment Descriptions][enchantment-descriptions] adds descriptions to enchantments, making it easier for players to understand what they do and how to use them effectively.
 
 ## Players Should Know
 
 1. Players can send a teleport request to another player with the `/tpa <target-player-id>` command from FTB Essentials. Once the target accepts the request, the requesting player is teleported to them. **This command has an 8-minute cooldown.**
-2. Each player can choose their own Apotheosis world tier. Open the world tier panel with the **Ctrl + T** keybind. We strongly discourage selecting a lower world tier before fighting bosses, which makes the game easier but far less fun.
+2. Each player can choose their own Apotheosis world tier. Open the world tier panel with the **Ctrl + T** key bind. We strongly discourage selecting a lower world tier before fighting bosses, which makes the game easier but far less fun. In multiplayer mode, world tiers are not shared between players. When two players activate different tiers, each one independently gets the mob spawns and loot quality matching their own selected tier. It is recommended that players select the same world tier when adventuring together.
 
 ## Mod List with Dependencies
 
@@ -85,7 +115,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
   - [Lionfish API][lionfish-api]
 - [YUNG's Better Mineshafts][yungs-better-mineshafts]
   - [YUNG's API][yungs-api]
-- [YUNG's Better Ocean Monument][yungs-better-ocean-monuments]
+- [YUNG's Better Ocean Monuments][yungs-better-ocean-monuments]
 - [YUNG's Better Dungeons][yungs-better-dungeons]
 - [YUNG's Better End Island][yungs-better-end-island]
 - [YUNG's Better Witch Huts][yungs-better-witch-huts]
@@ -105,7 +135,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
 - [Sophisticated Backpacks][sophisticated-backpacks]
   - [Sophisticated Core][sophisticated-core]
 - [Lootr][lootr]
-- [Apple Skin][apple-skin]
+- [AppleSkin][apple-skin]
 - [Carry On][carry-on]
 - [FTB Essentials][ftb-essentials]
   - [FTB Library][ftb-library]
@@ -114,7 +144,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
 - [FerriteCore][ferrite-core]
 - [Enchantment Descriptions][enchantment-descriptions]
   - [Prickle][prickle]
-  - [Bookeshelf][bookshelf]
+  - [Bookshelf][bookshelf]
 
 ### Client Only
 
@@ -122,7 +152,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
   - [Sodium][sodium]
 - [Entity Culling][entity-culling]
 - [ImmediatelyFast][immediately-fast]
-- [just enough items (jei)][just-enough-items]
+- [just enough items (JEi)][just-enough-items]
 - [Inventory Essentials][inventory-essentials]
 - [Jade][jade]
 - [JourneyMap][journey-map]
@@ -134,7 +164,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
 
 ## Recommended Key Binds
 
-In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit kind binds.
+In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit key binds.
 
 - Creative Mode
   - Load Hotbar Activator - **Not Bound**
@@ -157,6 +187,7 @@ In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit k
   - Toggle Fluid - **Not Bound**
 
 [neoforge]: https://neoforged.net
+[mods]: https://docs.jameschen.life/minecraft/kingdom-and-adventure/mods.zip
 [eula]: https://www.minecraft.net/en-us/eula
 [mine-colonies]: https://www.curseforge.com/minecraft/mc-mods/minecolonies
 [domum-ornamentum]: https://www.curseforge.com/minecraft/mc-mods/domum-ornamentum
