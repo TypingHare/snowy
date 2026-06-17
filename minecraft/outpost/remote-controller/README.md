@@ -40,7 +40,7 @@ All endpoints require a valid `token` header. The path is prefixed with `PREFIX`
 | `POST` | `/minecraft/stop` | Runs `stop-minecraft.sh` to stop the server, download the world, and delete the droplet. |
 | `GET` | `/minecraft/status` | Reports whether the server is running. |
 
-`start` and `stop` return the underlying script's `exitCode`, `stdout`, and `stderr` as JSON, with a `200` status on success and `500` on failure.
+Provisioning and teardown each take minutes, so `start` and `stop` are **fire-and-forget**: they kick off the corresponding script in the background and return `200` with a short JSON acknowledgement (`start` also returns `400` if the `game` parameter is missing) without waiting for it to finish. Poll `GET /status` to learn when the server is actually up or down. The script's success or failure is recorded in the service logs and, on success, in the [status file](#status-file).
 
 `status` always returns `200` with a JSON body describing the server:
 

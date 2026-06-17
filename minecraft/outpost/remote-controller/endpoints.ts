@@ -44,17 +44,19 @@ export const endpoints: ['GET' | 'POST', string, Handler][] = [
 export type Handler = (params: URLSearchParams) => Promise<Response>
 
 /**
- * Provisions the Minecraft droplet and starts the server by running
- * `start-minecraft.sh <game>`. The game to host is read from the `game` query
- * parameter, which must name a directory alongside the `outpost` directory.
+ * Starts the Minecraft server by running `start-minecraft.sh <game>` in the
+ * background. The game to host is read from the `game` query parameter, which
+ * must name a directory alongside the `outpost` directory.
  *
- * On success, if `SERVER_STATUS_FILE_PATH` is set, also rewrites that file with
- * an HTML snippet showing the hosted game name and the droplet's public IPv4.
+ * Provisioning takes minutes, so the script is fire-and-forget: this responds
+ * immediately and the caller polls `GET /status` to learn when the server is
+ * up. When the script later succeeds and `SERVER_STATUS_FILE_PATH` is set, the
+ * status file is rewritten with the hosted game name and the droplet's public
+ * IPv4.
  *
  * @param params - Request query parameters; must include `game`.
- * @returns A JSON response carrying the script's `exitCode`, `stdout`, and
- *   `stderr`: `400` if `game` is missing, `200` if the script succeeds, or
- *   `500` if it fails.
+ * @returns `400` if `game` is missing, otherwise a `200` JSON acknowledgement
+ *   that the start was kicked off.
  */
 async function startMinecraftServer(
     params: URLSearchParams
@@ -69,81 +71,59 @@ async function startMinecraftServer(
         )
     }
 
-    const proc = Bun.spawn(['sh', SCRIPT_PATH, gameName], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-    })
+    void runScript(
+        'Start Minecraft Server',
+        ['sh', SCRIPT_PATH, gameName],
+        async () => {
+            // Publish the server status (game name and droplet IP) so an
+            // external page can show players that the server is up and where to
+            // connect.
+            if (!SERVER_STATUS_FILE_PATH) return
+            const ipv4Address = (
+                await file(
+                    `${OUTPOST_DIR}/.temp/minecraft-droplet-public-ipv4`
+                ).text()
+            ).trim()
+            await file(SERVER_STATUS_FILE_PATH).write(
+                `<h2>Game Name: ${gameName}</h2>\n` +
+                    `<h2>IPv4 Address: ${ipv4Address}</h2>`
+            )
+        }
+    )
 
-    const exitCode = await proc.exited
-    const stdout = await new Response(proc.stdout).text()
-    const stderr = await new Response(proc.stderr).text()
-
-    console.log(`Start Minecraft Server Result:`)
-    console.log(`  - exit code: ${exitCode}`)
-    console.log(`  - stdout: ${stdout}`)
-    console.log(`  - stderr: ${stderr}`)
-
-    // On success, publish the server status (game name and droplet IP) so an
-    // external page can show players that the server is up and where to
-    // connect.
-    const isSuccess = exitCode === 0
-    if (isSuccess && SERVER_STATUS_FILE_PATH) {
-        const ipv4Address = (
-            await file(
-                `${OUTPOST_DIR}/.temp/minecraft-droplet-public-ipv4`
-            ).text()
-        ).trim()
-        await file(SERVER_STATUS_FILE_PATH).write(
-            `<h2>Game Name: ${gameName}</h2>\n` +
-                `<h2>IPv4 Address: ${ipv4Address}</h2>`
-        )
-    }
-
-    return new Response(JSON.stringify({ exitCode, stdout, stderr }), {
-        status: isSuccess ? 200 : 500,
-        headers: { 'Content-Type': 'application/json' },
-    })
+    return new Response(
+        JSON.stringify({ message: 'Starting the Minecraft server.' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+    )
 }
 
 /**
- * Stops the Minecraft server and tears down the droplet by running
- * `stop-minecraft.sh`, which gracefully stops the server, downloads the world
- * back to Snowy, and deletes the droplet.
+ * Stops the Minecraft server by running `stop-minecraft.sh` in the background,
+ * which gracefully stops the server, downloads the world back to Snowy, and
+ * deletes the droplet.
  *
- * On success, if `SERVER_STATUS_FILE_PATH` is set, also rewrites that file with
- * an HTML snippet indicating the server is down.
+ * Teardown takes minutes, so the script is fire-and-forget: this responds
+ * immediately and the caller polls `GET /status` to learn when the server is
+ * down. When the script later succeeds and `SERVER_STATUS_FILE_PATH` is set,
+ * the status file is rewritten to indicate the server is down.
  *
- * @returns A JSON response carrying the script's `exitCode`, `stdout`, and
- *   `stderr`: `200` if the script succeeds, or `500` if it fails.
+ * @returns A `200` JSON acknowledgement that the stop was kicked off.
  */
 async function stopMinecraftServer(): Promise<Response> {
     const SCRIPT_PATH = `${OUTPOST_DIR}/stop-minecraft.sh`
-    const proc = Bun.spawn(['sh', SCRIPT_PATH], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-    })
 
-    const exitCode = await proc.exited
-    const stdout = await new Response(proc.stdout).text()
-    const stderr = await new Response(proc.stderr).text()
-
-    console.log(`Stop Minecraft Server Result:`)
-    console.log(`  - exit code: ${exitCode}`)
-    console.log(`  - stdout: ${stdout}`)
-    console.log(`  - stderr: ${stderr}`)
-
-    // On success, mark the server as down in the status file.
-    const isSuccess = exitCode === 0
-    if (isSuccess && SERVER_STATUS_FILE_PATH) {
+    void runScript('Stop Minecraft Server', ['sh', SCRIPT_PATH], async () => {
+        // Mark the server as down so the external status page reflects it.
+        if (!SERVER_STATUS_FILE_PATH) return
         await file(SERVER_STATUS_FILE_PATH).write(
             `<h2>THE SERVER IS NOT UP YET.</h2>`
         )
-    }
-
-    return new Response(JSON.stringify({ exitCode, stdout, stderr }), {
-        status: isSuccess ? 200 : 500,
-        headers: { 'Content-Type': 'application/json' },
     })
+
+    return new Response(
+        JSON.stringify({ message: 'Stopping the Minecraft server.' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+    )
 }
 
 /**
@@ -209,4 +189,40 @@ async function getMinecraftServerStatus(): Promise<Response> {
         JSON.stringify({ droplet: true, reachable, running, ip }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
+}
+
+/**
+ * Runs an Outpost script in the background and logs its outcome. The `start`
+ * and `stop` handlers fire this without awaiting it (provisioning and teardown
+ * take minutes), so it never rejects: on a `0` exit it runs `onSuccess` to
+ * refresh the status file, and any failure — from the script or the callback —
+ * is logged rather than thrown.
+ *
+ * @param label - Human-readable prefix for the log lines.
+ * @param command - The command and arguments to spawn.
+ * @param onSuccess - Optional callback run only when the script exits `0`.
+ */
+async function runScript(
+    label: string,
+    command: string[],
+    onSuccess?: () => Promise<void>
+): Promise<void> {
+    try {
+        const proc = Bun.spawn(command, { stdout: 'pipe', stderr: 'pipe' })
+
+        const exitCode = await proc.exited
+        const stdout = await new Response(proc.stdout).text()
+        const stderr = await new Response(proc.stderr).text()
+
+        console.log(`${label} Result:`)
+        console.log(`  - exit code: ${exitCode}`)
+        console.log(`  - stdout: ${stdout}`)
+        console.log(`  - stderr: ${stderr}`)
+
+        if (exitCode === 0 && onSuccess) {
+            await onSuccess()
+        }
+    } catch (error) {
+        console.log(`${label} failed:`, error)
+    }
 }
