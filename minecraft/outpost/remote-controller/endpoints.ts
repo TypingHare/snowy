@@ -210,19 +210,48 @@ async function runScript(
     try {
         const proc = Bun.spawn(command, { stdout: 'pipe', stderr: 'pipe' })
 
-        const exitCode = await proc.exited
-        const stdout = await new Response(proc.stdout).text()
-        const stderr = await new Response(proc.stderr).text()
+        // Stream both pipes line by line as the script runs, instead of
+        // buffering everything until exit, so long-running provisioning and
+        // teardown surface progress in real time.
+        const [exitCode] = await Promise.all([
+            proc.exited,
+            streamLines(proc.stdout, `[${label}] stdout`),
+            streamLines(proc.stderr, `[${label}] stderr`),
+        ])
 
-        console.log(`${label} Result:`)
-        console.log(`  - exit code: ${exitCode}`)
-        console.log(`  - stdout: ${stdout}`)
-        console.log(`  - stderr: ${stderr}`)
+        console.log(`[${label}] Exited with code ${exitCode}`)
 
         if (exitCode === 0 && onSuccess) {
             await onSuccess()
         }
     } catch (error) {
-        console.log(`${label} failed:`, error)
+        console.log(`[${label}] Failed:`, error)
+    }
+}
+
+/**
+ * Logs a readable byte stream one line at a time as it arrives, prefixing each
+ * line with `label` so interleaved stdout/stderr stay attributable.
+ */
+async function streamLines(
+    stream: ReadableStream<Uint8Array>,
+    label: string
+): Promise<void> {
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    for await (const chunk of stream) {
+        buffer += decoder.decode(chunk, { stream: true })
+
+        let newline: number
+        while ((newline = buffer.indexOf('\n')) !== -1) {
+            console.log(`${label}: ${buffer.slice(0, newline)}`)
+            buffer = buffer.slice(newline + 1)
+        }
+    }
+
+    buffer += decoder.decode()
+    if (buffer.length > 0) {
+        console.log(`${label}: ${buffer}`)
     }
 }
