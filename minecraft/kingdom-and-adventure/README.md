@@ -4,7 +4,7 @@
 
 ## Installation
 
-**Neoforge** `21.11.233` or higher for Minecraft `1.21.1` is required to run this modpack. Please download the Neoforge installer from the [official website][neoforge] and follow the instructions to install it. You can download the mod files [from Snowy (James' personal website)][mods].
+**Neoforge** `21.11.233` or higher for Minecraft `1.21.1` is required to run this modpack. Please download the Neoforge installer from the [official website][neoforge] and follow the instructions to install it. You can download the mods directory (`mods.zip`) [from Snowy (James' personal website)][mods].
 
 Please make sure Java 21 is installed. For clients, please make sure the Minecraft Launcher is closed when installing Neoforge.
 
@@ -12,9 +12,13 @@ Please make sure Java 21 is installed. For clients, please make sure the Minecra
 
 Double-click the Neoforge JAR file. macOS will block it with a warning prompting you to move it to the Trash — click **"Done"** instead. Open Settings, go to **"Privacy & Security"**, scroll to the bottom, and click **"Open Anyway"**. Confirm by clicking **"Open Anyway"** once more in the dialog that follows. Finally, click **"Proceed"** in the Neoforge installer window.
 
+Then, create a `mods` directory in `~/Library/Application Support/minecraft`, where `~` represents your user home directory. If the directory already exists, back it up by renaming it, then create an empty `mods` directory. Finally, move all the `.jar` files from the downloaded mods directory into the `mods` directory you just created.
+
 ### Windows Client
 
 Double-click the Neoforge JAR file to launch the installer. If the file opens as an archive (e.g. in 7-Zip or WinRAR) instead of running, right-click it, choose **"Open with"**, and pick the Java Platform SE binary. If Windows SmartScreen blocks the file with a **"Windows protected your PC"** warning, click **"More info"** and then **"Run anyway"**. In the installer window, make sure **"Install client"** is selected, confirm the path points to your `.minecraft` folder, and click **"Proceed"**.
+
+Then, create a `mods` directory in `%APPDATA%\.minecraft`, where `%APPDATA%` represents your user's roaming application data folder (typically `C:\Users\<YourUsername>\AppData\Roaming`). You can reach it quickly by typing `%APPDATA%\.minecraft` into the File Explorer address bar or the Run dialog (Win+R). If the directory already exists, back it up by renaming it, then create an empty `mods` directory. Finally, move all the `.jar` files from the downloaded mods directory into the `mods` directory you just created.
 
 ### Server (Linux)
 
@@ -135,6 +139,7 @@ Other mods in the modpack are small, but they improve the quality of life and ma
 - [Sophisticated Backpacks][sophisticated-backpacks]
   - [Sophisticated Core][sophisticated-core]
 - [Lootr][lootr]
+- [Corpse][corpse]
 - [AppleSkin][apple-skin]
 - [Carry On][carry-on]
 - [FTB Essentials][ftb-essentials]
@@ -171,20 +176,36 @@ In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit k
   - Save Hotbar Activator - **Not Bound**
 - Apotheosis
   - Change Radial Mining Mode - **Not Bound**
-  - Compare Hovered Equipment - **Not Bound**
-  - Link Hovered Item to Chat - **Not Bound**
+  - Compare Hovered Equipment - **Left Shift**
+  - Link Hovered Item to Chat - **Shift + T**
   - Open World Tier Select - **Ctrl + T**
+- Inventory Essentials
+  - Sort Inventory - **S**
+  - Transfer One - **Space**
 - Iris
   - Reload Shaders - **Not Bound**
   - Shaderpack Selection Screen - **Not Bound**
   - Toggle Shaders - **Not Bound**
   - Wireframe (SP only) - **Not Bound**
+- JEI (Cheat Mode)
+  - Cheat 1 Item - **Not Bound**
+  - Cheat 1 Item - **Not Bound**
+  - Cheat 1 Stack - **Not Bound**
+  - Cheat 1 Stack - **Not Bound**
 - Jade
   - Narrate - **Not Bound**
   - Open Config - **Not Bound**
   - Show Details - **Not Bound**
   - Show Overlay - **Not Bound**
+  - Show Recipes - **Not Bound**
+  - Show Uses - **Not Bound**
   - Toggle Fluid - **Not Bound**
+- JourneyMap FullScreen Map
+  - Create Waypoint (at cursor) - **Not Bound**
+- Sophisticated Mods
+  - Sort Storage/Backpack - **S**
+  - Transfer to Inventory - **I**
+  - Transfer to Storage - **B**
 
 [neoforge]: https://neoforged.net
 [mods]: https://docs.jameschen.life/minecraft/kingdom-and-adventure/mods.zip
@@ -226,6 +247,7 @@ In the Minecraft main menu, go to `Options` > `Controls` > `Key Binds` to edit k
 [sophisticated-backpacks]: https://modrinth.com/mod/sophisticated-backpacks
 [sophisticated-core]: https://modrinth.com/mod/sophisticated-core
 [lootr]: https://modrinth.com/mod/lootr
+[corpse]: https://modrinth.com/mod/corpse
 [apple-skin]: https://modrinth.com/mod/appleskin
 [carry-on]: https://modrinth.com/mod/carry-on
 [ftb-essentials]: https://www.curseforge.com/minecraft/mc-mods/ftb-essentials
