@@ -2,8 +2,8 @@
   "semi": false,
   "singleQuote": true,
   "trailingComma": "es5",
-  "printWidth": 100,
-  "tabWidth": 2,
+  "printWidth": 80,
+  "tabWidth": 4,
   "useTabs": false,
   "endOfLine": "lf",
   "plugins": ["prettier-plugin-jsdoc"],
@@ -13,13 +13,6 @@
       "files": "**/*.md",
       "options": {
         "proseWrap": "never"
-      }
-    },
-    {
-      "files": "**/*.ts",
-      "options": {
-        "printWidth": 80,
-        "tabWidth": 4
       }
     }
   ]

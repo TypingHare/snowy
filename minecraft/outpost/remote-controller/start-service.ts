@@ -6,18 +6,17 @@
  * Required environment variables:
  *
  * - `PORT` — TCP port to listen on.
- * - `HOME` — used to locate the `stop-minecraft.sh` script.
  *
- * Endpoints:
- *
- * - `POST /stop` — runs `stop-minecraft.sh` and returns its exit code, stdout,
- *   and stderr as JSON.
+ * The request handlers in `./endpoints` require additional environment
+ * variables (`PREFIX`, `OUTPOST_DIR`, `SSH_PRIVATE_KEY_FILE`); see that
+ * module.
  */
 
 import { file } from 'bun'
 import { timingSafeEqual } from 'node:crypto'
+import { endpoints } from './endpoints'
 
-const { HOME, PORT, PREFIX = '' } = process.env
+const { PORT } = process.env
 const TOKEN_PATH = 'credential/token'
 
 if (!PORT) {
@@ -42,33 +41,35 @@ Bun.serve({
     port,
     async fetch(req) {
         const url = new URL(req.url)
-
         console.log(`Received: [${req.method}] ${url.pathname}`)
-        if (req.method !== 'POST') {
-            console.log(
-                `Error: Unsupported method ${req.method} for ${url.pathname}.`
-            )
-            return new Response('Method Not Allowed', { status: 405 })
+
+        // Verify token.
+        const token = req.headers.get('token')
+        if (!token || !isTokenValid(token, expectedToken)) {
+            console.log(`Error: Invalid or missing token in request.`)
+            return new Response('Unauthorized', { status: 401 })
         }
 
-        if (url.pathname === `${PREFIX}/stop`) {
-            const token = req.headers.get('token')
-
-            if (!token || !isTokenValid(token, expectedToken)) {
-                console.log(`Error: Invalid or missing token in request.`)
-                return new Response('Unauthorized', { status: 401 })
+        // Route request.
+        for (const endpoint of endpoints) {
+            const [method, path, handler] = endpoint
+            if (url.pathname !== path) {
+                continue
             }
 
-            const [exitCode, stdout, stderr] = await stopMinecraft()
-            console.log(`Performing a "stop" action.`)
-            console.log(`  - exit code: ${exitCode}`)
-            console.log(`  - stdout: ${stdout}`)
-            console.log(`  - stderr: ${stderr}`)
+            if (req.method !== method) {
+                console.log(
+                    `Error: Unsupported method ${req.method} for ${path}.`
+                )
+                return new Response('Method Not Allowed', { status: 405 })
+            }
 
-            return new Response(JSON.stringify({ exitCode, stdout, stderr }), {
-                status: exitCode === 0 ? 200 : 500,
-                headers: { 'Content-Type': 'application/json' },
-            })
+            try {
+                return await handler(url.searchParams)
+            } catch (error) {
+                console.log(`Error handling ${method} ${path}:`, error)
+                return new Response('Internal Server Error', { status: 500 })
+            }
         }
 
         return new Response('Not Found', { status: 404 })
@@ -91,25 +92,6 @@ function isTokenValid(received: string, expected: string): boolean {
     const a = Buffer.from(received)
     const b = Buffer.from(expected)
     return a.length === b.length && timingSafeEqual(a, b)
-}
-
-/**
- * Runs `stop-minecraft.sh` and collects its exit status and output streams.
- *
- * @returns A tuple of `[exitCode, stdout, stderr]` from the script invocation.
- */
-async function stopMinecraft(): Promise<[number, string, string]> {
-    const SCRIPT_PATH = `${HOME}/minecraft/outpost/stop-minecraft.sh`
-    const proc = Bun.spawn(['sh', SCRIPT_PATH], {
-        stdout: 'pipe',
-        stderr: 'pipe',
-    })
-
-    const exitCode = await proc.exited
-    const stdout = await new Response(proc.stdout).text()
-    const stderr = await new Response(proc.stderr).text()
-
-    return [exitCode, stdout, stderr]
 }
 
 console.log(`Listening on ${port}...`)
