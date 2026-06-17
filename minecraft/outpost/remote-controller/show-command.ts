@@ -53,8 +53,13 @@ if (!(await tokenFile.exists())) {
 }
 const token = (await tokenFile.text()).trim()
 
-const http = DOMAIN === 'localhost' ? 'http' : 'https'
+// In production the service sits behind a reverse proxy that terminates TLS on
+// 443 and forwards to `PORT` internally, so the public URL is `https` with no
+// port. Only local access talks plain `http` directly on `PORT`.
+const isLocal = DOMAIN === 'localhost'
+const scheme = isLocal ? 'http' : 'https'
+const authority = isLocal ? `${DOMAIN}:${PORT}` : DOMAIN
 console.log(
-    `curl -X ${method} ${http}://${DOMAIN}:${PORT}${PREFIX}/${action} \\\n` +
+    `curl -X ${method} ${scheme}://${authority}${PREFIX}/${action} \\\n` +
         `    -H "token:${token}"`
 )
