@@ -17,7 +17,7 @@
 import { file } from 'bun'
 import { timingSafeEqual } from 'node:crypto'
 
-const { HOME, PORT } = process.env
+const { HOME, PORT, PREFIX = '' } = process.env
 const TOKEN_PATH = 'credential/token'
 
 if (!PORT) {
@@ -43,19 +43,24 @@ Bun.serve({
     async fetch(req) {
         const url = new URL(req.url)
 
+        console.log(`Received: [${req.method}] ${url.pathname}`)
         if (req.method !== 'POST') {
+            console.log(
+                `Error: Unsupported method ${req.method} for ${url.pathname}.`
+            )
             return new Response('Method Not Allowed', { status: 405 })
         }
 
-        if (url.pathname === '/stop') {
+        if (url.pathname === `${PREFIX}/stop`) {
             const token = req.headers.get('token')
 
             if (!token || !isTokenValid(token, expectedToken)) {
+                console.log(`Error: Invalid or missing token in request.`)
                 return new Response('Unauthorized', { status: 401 })
             }
 
             const [exitCode, stdout, stderr] = await stopMinecraft()
-            console.log(`Received a stop request.`)
+            console.log(`Performing a "stop" action.`)
             console.log(`  - exit code: ${exitCode}`)
             console.log(`  - stdout: ${stdout}`)
             console.log(`  - stderr: ${stderr}`)
@@ -107,4 +112,4 @@ async function stopMinecraft(): Promise<[number, string, string]> {
     return [exitCode, stdout, stderr]
 }
 
-console.log(`Listening on http://localhost:${port}`)
+console.log(`Listening on ${port}...`)
