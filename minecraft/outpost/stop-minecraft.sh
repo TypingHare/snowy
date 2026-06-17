@@ -12,7 +12,7 @@ GAME_DIRECTORY=$(realpath "../$GAME_NAME")
 
 SSH_KEY_FILE="$HOME/.ssh/id_ed25519_digital_ocean"
 
-# Recover the droplet ID and IP that start-minecraft-droplet.sh persisted.
+# Recover the droplet IP that start-minecraft.sh persisted.
 DROPLET_PUBLIC_IPV4=$(<"$TEMP_DIR/minecraft-droplet-public-ipv4")
 
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -21,13 +21,15 @@ BACKUP_DIRECTORY="$GAME_DIRECTORY.bak.$TIMESTAMP"
 
 # --- Stop the Minecraft server --------------------------------------------- #
 
-# `-t` allocates a pseudo-terminal so `systemctl --user` works (same reason
-# as in start-minecraft-droplet.sh).
-echo "Stopping the Minecraft server on the droplet..."
-ssh -t -i "$SSH_KEY_FILE" \
-    james@"$DROPLET_PUBLIC_IPV4" \
-    'systemctl --user stop minecraft-server'
-echo "Stopped the Minecraft server on the droplet."
+# Type "stop" into the server console via tmux so it shuts down gracefully and
+# saves the world, then wait for the session to disappear (which happens when
+# the server process exits) before downloading. `|| true` tolerates the session
+# already being gone — e.g. if the server crashed — so the download still runs.
+SESSION="minecraft"
+echo "Sending 'stop' to the server console and waiting for it to save & exit..."
+ssh -i "$SSH_KEY_FILE" james@"$DROPLET_PUBLIC_IPV4" \
+    "tmux send-keys -t $SESSION 'stop' Enter 2>/dev/null || true; \
+       while tmux has-session -t $SESSION 2>/dev/null; do sleep 2; done"
 
 # --- Download the game directory ------------------------------------------- #
 

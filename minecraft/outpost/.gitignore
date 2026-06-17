@@ -1,1 +1,6 @@
-.temp
+# Developer local files
+.local/
+
+# Temporary files
+.temp/
+

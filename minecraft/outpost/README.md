@@ -45,10 +45,10 @@ The user data file (`minecraft-droplet-init.yaml`) uses `cloud-init`, which runs
 
 - Create a user named `james` in the `sudo` group.
 - Set an authorized key for `james`, so that I can connect to the server using `ssh james@<ip-addr>`. Note that the corresponding key is on Snowy.
-- Install `ufw` and `default-jdk` using `apt`.
+- Install `ufw`, `default-jdk`, and `tmux` using `apt`. `tmux` hosts the Minecraft server in a detached session, so its console stays reachable for sending server commands.
 - Create a swap file to enable virtual memory.
-- Pre-create the two directories `/home/james/minecraft` and `/home/james/.config/systemd/user`. Snowy later uploads files into them via `scp`, which does not create missing parent directories, so they must exist beforehand.
-- Run `loginctl enable-linger james` so that systemd user services can keep running even when `james` is not logged in.
+- Pre-create the directory `/home/james/minecraft`. Snowy later uploads the game directory into it via `scp`, which does not create missing parent directories, so it must exist beforehand.
+- Run `loginctl enable-linger james` so that `james`'s processes can keep running even when `james` is not logged in. The `tmux` server already daemonizes itself, so this is mainly belt-and-suspenders against `logind` killing user processes on logout.
 
 Finally, I just need to create two bash files, `start-minecraft.sh` and `stop-minecraft.sh`, to start and stop the Minecraft server, respectively.
 
@@ -91,28 +91,23 @@ scp -r -i "$SSH_KEY_FILE" \
     james@"$DROPLET_PUBLIC_IPV4":~/minecraft;
 ```
 
-Finally, I want to start the Minecraft server using systemd user services. I have already created a service file named `minecraft-server.service`, which is located in the same directory as `start-minecraft.sh`. I need to copy it directly to `~/.config/systemd/user/` on the Minecraft droplet, which is where systemd user services are stored. After that, I can use `systemctl --user` to reload the systemd daemon and start the Minecraft server.
+Finally, I want to start the Minecraft server. I originally used a systemd user service for this, but systemd does not attach the server's console to anything, so there is no way to type server commands (such as `op`, `whitelist`, or `stop`) into it. Instead, I now launch the server inside a detached `tmux` session, which keeps a pseudo-terminal attached to the server, so its console can be driven later via `tmux send-keys`.
 
 ```bash
-# Move the service file to the Minecraft droplet.
-scp -i "$SSH_KEY_FILE" \
-    minecraft-server.service \
-    james@"$DROPLET_PUBLIC_IPV4":~/.config/systemd/user
-
-# Start the Minecraft server using systemd user services.
-ssh -t -i "$SSH_KEY_FILE" \
-    james@"$DROPLET_PUBLIC_IPV4" \
-    'systemctl --user daemon-reload && systemctl --user start minecraft-server'
+ssh -i "$SSH_KEY_FILE" james@"$DROPLET_PUBLIC_IPV4" \
+    "tmux new-session -d -s minecraft -c ~/minecraft/$GAME_NAME 'bash run.sh'"
 ```
+
+The `-d` flag creates the session detached, and `-c` sets its working directory to the game directory so `run.sh` resolves its relative paths correctly. The `tmux` server daemonizes itself, so the session keeps running after this SSH session ends — no `systemctl --user` or pseudo-terminal (`ssh -t`) tricks are needed anymore.
 
 ## `stop-minecraft.sh`
 
-Stopping the Minecraft server is much simpler. First, I just use `ssh` to stop the Minecraft server using systemd user services.
+Stopping the Minecraft server is much simpler. First, I send the `stop` command into the server console via `tmux send-keys`, which lets the server shut down gracefully and save the world. I then wait for the `tmux` session to disappear, which happens once the server process exits, so I know the world is fully saved before downloading it. The `|| true` tolerates the session already being gone (for example, if the server had crashed), so the download below still runs.
 
 ```bash
-ssh -t -i "$SSH_KEY_FILE" \
-    james@"$DROPLET_PUBLIC_IPV4" \
-    'systemctl --user stop minecraft-server'
+ssh -i "$SSH_KEY_FILE" james@"$DROPLET_PUBLIC_IPV4" \
+    "tmux send-keys -t minecraft 'stop' Enter 2>/dev/null || true; \
+       while tmux has-session -t minecraft 2>/dev/null; do sleep 2; done"
 ```
 
 Next, I copy the game directory back to Snowy using `scp`. Instead of overwriting the existing game directory, I copy it to a snapshot directory in `/tmp`. Then, I delete the Minecraft droplet using `doctl` (the script is in `delete-minecraft-droplet.sh`).

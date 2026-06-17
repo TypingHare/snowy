@@ -58,8 +58,8 @@ DROPLET_PUBLIC_IPV4=$(doctl compute droplet get "$DROPLET_ID" \
 echo "Created the Minecraft droplet (ID: $DROPLET_ID; public IPv4: \
 $DROPLET_PUBLIC_IPV4)."
 
-# Persist the game name, droplet ID, and IP so `stop-minecraft-droplet.sh` can
-# find them.
+# Persist the game name, droplet ID, and IP so `stop-minecraft.sh` can find
+# them.
 mkdir -p "$TEMP_DIR"
 echo "$GAME_NAME" >"$TEMP_DIR/game-name"
 echo "$DROPLET_ID" >"$TEMP_DIR/minecraft-droplet-id"
@@ -80,19 +80,18 @@ until ssh -i "$SSH_KEY_FILE" \
     true 2>/dev/null; do
     sleep 3
 done
-echo "SSH is available on the droplet."
 
 # Wait for cloud-init to finish so the james user, swap, and packages are ready.
 echo "Waiting for cloud-init to finish on the droplet..."
 ssh -i "$SSH_KEY_FILE" root@"$DROPLET_PUBLIC_IPV4" \
-    'cloud-init status --wait >/dev/null'
-echo "cloud-init has finished on the droplet."
+    'cloud-init status --wait' >/dev/null 2>&1
 
-# --- Upload the game and unit file ----------------------------------------- #
+# --- Upload the game directory --------------------------------------------- #
 
 # Upload the game directory. Target `~/minecraft/` was pre-created in
 # cloud-init's runcmd, so scp places the game dir inside it as
-# `~/minecraft/$GAME_NAME/`, matching the unit file's WorkingDirectory.
+# `~/minecraft/$GAME_NAME/`, which is the working directory the tmux session
+# starts the server from below.
 echo "Uploading the game directory \"$GAME_DIRECTORY\" to the droplet..."
 if ! scp -r -i "$SSH_KEY_FILE" \
     "$GAME_DIRECTORY" \
@@ -100,29 +99,18 @@ if ! scp -r -i "$SSH_KEY_FILE" \
     echo "Error: failed to upload the game directory to the droplet." >&2
     exit 1
 fi
-echo "Uploaded the game directory to the droplet."
-
-# Upload the user-mode systemd unit file. Target `~/.config/systemd/user/`
-# was pre-created in cloud-init's runcmd.
-echo "Uploading minecraft-server.service to the droplet..."
-if ! scp -i "$SSH_KEY_FILE" \
-    minecraft-server.service \
-    james@"$DROPLET_PUBLIC_IPV4":~/.config/systemd/user; then
-    echo "Error: failed to upload minecraft-server.service to the droplet." >&2
-    exit 1
-fi
-echo "Uploaded minecraft-server.service to the droplet."
 
 # --- Start the Minecraft server -------------------------------------------- #
 
-# `-t` allocates a pseudo-terminal, which triggers logind to set up
-# XDG_RUNTIME_DIR so `systemctl --user` can talk to the user manager.
-# `loginctl enable-linger james` (set in cloud-init) keeps the user manager
-# alive after this SSH session ends, so the server keeps running.
-echo "Starting the Minecraft server on the droplet..."
-ssh -t -i "$SSH_KEY_FILE" \
-    james@"$DROPLET_PUBLIC_IPV4" \
-    'systemctl --user daemon-reload && systemctl --user start minecraft-server'
-echo "Started the Minecraft server on the droplet."
+# Launch the server in a detached tmux session named "$SESSION". `-d` keeps it
+# detached and `-c` sets the working directory to the game dir. The tmux server
+# daemonizes itself, so the session keeps running after this SSH session ends.
+# Hosting the server under tmux (instead of a systemd unit) keeps its console
+# attached to a pseudo-terminal, so `stop-minecraft.sh` and the remote
+# controller can feed it server commands via `tmux send-keys`.
+SESSION="minecraft"
+echo "Starting the Minecraft server in a tmux session on the droplet..."
+ssh -i "$SSH_KEY_FILE" james@"$DROPLET_PUBLIC_IPV4" \
+    "tmux new-session -d -s $SESSION -c ~/minecraft/$GAME_NAME 'bash run.sh'"
 
 echo "Minecraft server \"$GAME_NAME\" is now running at $DROPLET_PUBLIC_IPV4."

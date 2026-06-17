@@ -13,10 +13,12 @@ users:
 package_update: true
 package_upgrade: true
 
-# Install packages
+# Install packages. `tmux` hosts the Minecraft server in a detached session so
+# its console stays reachable for sending server commands.
 packages:
   - ufw
   - default-jdk
+  - tmux
 
 # Create a swap file and enable virtual memory.
 # Specifically, this creates `/swapfile` with a size of 4GB, allocated by `fallocate`. Then, it runs `mkswap` on it and then `swapon` to enable it. Finally, it adds an entry to `/etc/fstab` so it's re-enabled on reboot
@@ -27,10 +29,10 @@ swap:
 
 # Run commands
 runcmd:
-  # Make `~/minecraft` and `/.config/systemd/user` directories for james.
+  # Pre-create `~/minecraft` for `james`; `scp` uploads the game directory into
+  # it later and will not create missing parent directories on its own.
   - install -d -o james -g james /home/james/minecraft
-  - install -d -o james -g james /home/james/.config/systemd/user
-  # Allow james's user systemd manager to run without an active login session,
-  # so `systemctl --user` services keep running after the SSH session that
-  # started them ends.
+  # Keep `james`'s processes running without an active login session. The tmux
+  # server already daemonizes itself, so this is belt-and-suspenders against
+  # logind killing user processes when the SSH session that started them ends.
   - loginctl enable-linger james
