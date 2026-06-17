@@ -9,11 +9,19 @@
  *   `start-minecraft.sh` / `stop-minecraft.sh` scripts and the persisted
  *   droplet IP under `.temp`.
  * - `SSH_PRIVATE_KEY_FILE` — SSH key used to reach the droplet.
+ * - `SERVER_STATUS_FILE_PATH` — optional path to an HTML file that is rewritten
+ *   on every successful start/stop so an external page can display the current
+ *   server status. When unset, this side effect is skipped.
  */
 
 import { file } from 'bun'
 
-const { PREFIX = '', OUTPOST_DIR, SSH_PRIVATE_KEY_FILE = '' } = process.env
+const {
+    PREFIX = '',
+    OUTPOST_DIR,
+    SSH_PRIVATE_KEY_FILE = '',
+    SERVER_STATUS_FILE_PATH = '',
+} = process.env
 
 if (!OUTPOST_DIR) {
     console.error('Error: OUTPOST_DIR environment variable is not set.')
@@ -39,6 +47,9 @@ export type Handler = (params: URLSearchParams) => Promise<Response>
  * Provisions the Minecraft droplet and starts the server by running
  * `start-minecraft.sh <game>`. The game to host is read from the `game` query
  * parameter, which must name a directory alongside the `outpost` directory.
+ *
+ * On success, if `SERVER_STATUS_FILE_PATH` is set, also rewrites that file with
+ * an HTML snippet showing the hosted game name and the droplet's public IPv4.
  *
  * @param params - Request query parameters; must include `game`.
  * @returns A JSON response carrying the script's `exitCode`, `stdout`, and
@@ -72,8 +83,24 @@ async function startMinecraftServer(
     console.log(`  - stdout: ${stdout}`)
     console.log(`  - stderr: ${stderr}`)
 
+    // On success, publish the server status (game name and droplet IP) so an
+    // external page can show players that the server is up and where to
+    // connect.
+    const isSuccess = exitCode === 0
+    if (isSuccess && SERVER_STATUS_FILE_PATH) {
+        const ipv4Address = (
+            await file(
+                `${OUTPOST_DIR}/.temp/minecraft-droplet-public-ipv4`
+            ).text()
+        ).trim()
+        await file(SERVER_STATUS_FILE_PATH).write(
+            `<h2>Game Name: ${gameName}</h2>\n` +
+                `<h2>IPv4 Address: ${ipv4Address}</h2>`
+        )
+    }
+
     return new Response(JSON.stringify({ exitCode, stdout, stderr }), {
-        status: exitCode === 0 ? 200 : 500,
+        status: isSuccess ? 200 : 500,
         headers: { 'Content-Type': 'application/json' },
     })
 }
@@ -82,6 +109,9 @@ async function startMinecraftServer(
  * Stops the Minecraft server and tears down the droplet by running
  * `stop-minecraft.sh`, which gracefully stops the server, downloads the world
  * back to Snowy, and deletes the droplet.
+ *
+ * On success, if `SERVER_STATUS_FILE_PATH` is set, also rewrites that file with
+ * an HTML snippet indicating the server is down.
  *
  * @returns A JSON response carrying the script's `exitCode`, `stdout`, and
  *   `stderr`: `200` if the script succeeds, or `500` if it fails.
@@ -102,8 +132,16 @@ async function stopMinecraftServer(): Promise<Response> {
     console.log(`  - stdout: ${stdout}`)
     console.log(`  - stderr: ${stderr}`)
 
+    // On success, mark the server as down in the status file.
+    const isSuccess = exitCode === 0
+    if (isSuccess && SERVER_STATUS_FILE_PATH) {
+        await file(SERVER_STATUS_FILE_PATH).write(
+            `<h2>THE SERVER IS NOT UP YET.</h2>`
+        )
+    }
+
     return new Response(JSON.stringify({ exitCode, stdout, stderr }), {
-        status: exitCode === 0 ? 200 : 500,
+        status: isSuccess ? 200 : 500,
         headers: { 'Content-Type': 'application/json' },
     })
 }

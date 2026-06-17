@@ -8,8 +8,8 @@
  * - `PORT` — TCP port to listen on.
  *
  * The request handlers in `./endpoints` require additional environment
- * variables (`PREFIX`, `OUTPOST_DIR`, `SSH_PRIVATE_KEY_FILE`); see that
- * module.
+ * variables (`PREFIX`, `OUTPOST_DIR`, `SSH_PRIVATE_KEY_FILE`, and the optional
+ * `SERVER_STATUS_FILE_PATH`); see that module.
  */
 
 import { file } from 'bun'

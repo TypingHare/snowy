@@ -21,6 +21,7 @@ Then create a `.env` file (see `.env.example`):
 | `PREFIX` | service | URL path prefix the routes are mounted under (e.g. `/minecraft`). |
 | `OUTPOST_DIR` | service | Absolute path to the `outpost` directory (where the start/stop scripts live). |
 | `SSH_PRIVATE_KEY_FILE` | service | SSH key used to reach the Minecraft droplet for status checks. |
+| `SERVER_STATUS_FILE_PATH` | service | Optional. Path to an HTML file rewritten on every successful start/stop (see [Status file](#status-file)). When unset, the file is not written. |
 | `DOMAIN` | `show-command.ts` | Host the service is reachable at, used only to print example commands. |
 
 ## Running
@@ -51,6 +52,15 @@ All endpoints require a valid `token` header. The path is prefixed with `PREFIX`
 - `reachable` — whether the droplet answered the SSH probe (`false` usually means a stale IP after the droplet was deleted).
 - `running` — whether the server's `tmux` session is alive.
 - `ip` — the droplet's public IPv4, present only when a droplet is recorded.
+
+## Status file
+
+If `SERVER_STATUS_FILE_PATH` is set, the service rewrites that file on every successful start and stop, so a static page can show players whether the server is up and where to connect. It is plain HTML, intended to be served or embedded elsewhere:
+
+- After a successful `start`, it contains the hosted game name and the droplet's public IPv4 address.
+- After a successful `stop`, it contains a notice that the server is down.
+
+The file is only touched when the corresponding action succeeds; a failed start or stop leaves the previous contents in place. Unlike `GET /status`, this is a cached snapshot rather than a live probe.
 
 ## `show-command.ts`
 
