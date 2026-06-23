@@ -4,3 +4,5 @@
 # Temporary files
 .temp/
 
+# Claude files
+.claude
