@@ -7,7 +7,7 @@ const defaultEnv = {
     tempDir: '/tmp/snowy_outpost',
 
     // State directory to use for storing persistent state files.
-    stateDir: '~/.local/share/snowy_outpost',
+    stateDir: '~/.local/state/snowy_outpost',
 
     // DigitalOcean Droplet configuration
     dropletName: 'minecraft-server',
