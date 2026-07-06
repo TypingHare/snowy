@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{{ game_name }} — Server Status</title>
+        <style>
+            :root {
+                --bg: #0f1115;
+                --card: #1a1d24;
+                --text: #e6e8eb;
+                --muted: #9aa0a6;
+                --border: #2a2e37;
+                --accent: #3ba55d;
+                --danger: #d83c3c;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    'Segoe UI',
+                    Roboto,
+                    sans-serif;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 420px;
+                margin: 24px;
+                padding: 28px;
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+            }
+
+            h1 {
+                margin: 0 0 4px;
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                margin: 0 0 20px;
+                color: var(--muted);
+                font-size: 0.9rem;
+            }
+
+            .status {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 24px;
+                font-size: 0.9rem;
+            }
+
+            .status .label {
+                color: var(--muted);
+            }
+
+            .status .value {
+                margin-left: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 4px 12px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.06);
+                font-weight: 600;
+                font-size: 0.85rem;
+            }
+
+            .status .value::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--accent);
+            }
+
+            /* Red dot when the server is not running. */
+            .status .value.stopped::before {
+                background: var(--danger);
+            }
+
+            .status .ip {
+                margin-left: auto;
+                font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+                font-size: 0.85rem;
+                font-weight: 600;
+            }
+
+            label {
+                display: block;
+                margin-bottom: 6px;
+                color: var(--muted);
+                font-size: 0.85rem;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px 12px;
+                margin-bottom: 20px;
+                color: var(--text);
+                background: #12151b;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 0.95rem;
+            }
+
+            .actions {
+                display: flex;
+                gap: 12px;
+            }
+
+            button {
+                flex: 1;
+                padding: 11px 0;
+                border: none;
+                border-radius: 8px;
+                color: #fff;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .btn-start {
+                background: var(--accent);
+            }
+
+            .btn-stop {
+                background: var(--danger);
+            }
+
+            .message {
+                margin: 18px 0 0;
+                min-height: 1.2em;
+                font-size: 0.9rem;
+                color: var(--muted);
+            }
+
+            .message.ok {
+                color: var(--accent);
+            }
+
+            .message.error {
+                color: var(--danger);
+            }
+        </style>
+    </head>
+    <body>
+        <main class="card">
+            <h1>{{ game_name }}</h1>
+            <br />
+            <div class="status">
+                <span class="label">Minecraft server status</span>
+                <span class="value {{ status_class }}"
+                    >{{ droplet_status }}</span
+                >
+            </div>
+            <div class="status">
+                <span class="label">IP address</span>
+                <span class="ip">{{ droplet_ip }}</span>
+            </div>
+
+            <label for="token">Token</label>
+            <input
+                id="token"
+                type="password"
+                placeholder="Enter your token"
+                autocomplete="off"
+            />
+
+            <div class="actions">
+                <button class="btn-start" onclick="control('start')">
+                    Start
+                </button>
+                <button class="btn-stop" onclick="control('stop')">Stop</button>
+            </div>
+
+            <p id="message" class="message"></p>
+        </main>
+
+        <script>
+            const GAME_NAME = '{{ game_name }}'
+            const APP_PREFIX = '{{ app_prefix }}'
+
+            // The server-rendered current status: 'running' or 'stopped'.
+            const STATUS_CLASS = '{{ status_class }}'
+
+            // While an operation is in flight we store the status we're waiting
+            // for ('running' after Start, 'stopped' after Stop) so the auto
+            // refresh can survive page reloads and stop once it's reached.
+            const WATCH_KEY = 'outpost:watch:' + GAME_NAME
+            const REFRESH_INTERVAL_MS = 3000
+
+            function setCookie(name, value, days) {
+                const maxAge = days * 24 * 60 * 60
+                document.cookie =
+                    name +
+                    '=' +
+                    encodeURIComponent(value) +
+                    ';path=/;max-age=' +
+                    maxAge +
+                    ';SameSite=Strict'
+            }
+
+            function getCookie(name) {
+                const prefix = name + '='
+                for (const part of document.cookie.split(';')) {
+                    const cookie = part.trim()
+                    if (cookie.startsWith(prefix)) {
+                        return decodeURIComponent(cookie.slice(prefix.length))
+                    }
+                }
+                return null
+            }
+
+            // Prefill the token field from a previously saved cookie, and
+            // resume auto refreshing if we're still waiting for an operation to
+            // finish.
+            window.addEventListener('DOMContentLoaded', () => {
+                const saved = getCookie('token')
+                if (saved) {
+                    document.getElementById('token').value = saved
+                }
+
+                const target = sessionStorage.getItem(WATCH_KEY)
+                if (target) {
+                    if (target === STATUS_CLASS) {
+                        // The server reached the desired state; stop refreshing.
+                        sessionStorage.removeItem(WATCH_KEY)
+                    } else {
+                        setTimeout(
+                            () => location.reload(),
+                            REFRESH_INTERVAL_MS
+                        )
+                    }
+                }
+            })
+
+            async function control(action) {
+                const token = document.getElementById('token').value.trim()
+                const message = document.getElementById('message')
+                const buttons = document.querySelectorAll('button')
+
+                message.className = 'message'
+                message.textContent =
+                    action === 'start' ? 'Starting…' : 'Stopping…'
+                buttons.forEach((b) => (b.disabled = true))
+
+                try {
+                    const response = await fetch(APP_PREFIX + '/' + action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Sent for authentication against the server's credential token.
+                            Authorization: 'Bearer ' + token,
+                        },
+                        body: JSON.stringify({ game: GAME_NAME }),
+                    })
+
+                    const data = await response.json().catch(() => ({}))
+                    message.textContent =
+                        data.message || data.error || 'HTTP ' + response.status
+                    message.className =
+                        'message ' + (response.ok ? 'ok' : 'error')
+
+                    // Remember the token on success so it can be prefilled next time.
+                    if (response.ok) {
+                        setCookie('token', token, 30)
+
+                        // Start (or Stop) runs in the background and can take a
+                        // while. Watch for the target status and keep refreshing
+                        // the page every 3s until it's reached.
+                        const target =
+                            action === 'start' ? 'running' : 'stopped'
+                        sessionStorage.setItem(WATCH_KEY, target)
+                        setTimeout(
+                            () => location.reload(),
+                            REFRESH_INTERVAL_MS
+                        )
+                    }
+                } catch (error) {
+                    message.textContent = 'Request failed: ' + error
+                    message.className = 'message error'
+                } finally {
+                    buttons.forEach((b) => (b.disabled = false))
+                }
+            }
+        </script>
+    </body>
+</html>

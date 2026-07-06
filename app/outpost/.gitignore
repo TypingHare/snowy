@@ -1,0 +1,11 @@
+# Developer local files
+.local/
+
+# macOS system files
+.DS_Store
+
+# Node.js dependencies
+node_modules/
+
+# Credential files
+/credential

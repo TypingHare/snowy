@@ -1,0 +1,22 @@
+{
+  "name": "@typinghare/outpost",
+  "version": "2026.1.0",
+  "bin": {
+    "outpost": "bin/outpost"
+  },
+  "scripts": {
+    "generate-token": "mkdir -p credential && openssl rand -hex 32 > credential/token && chmod 600 credential/token",
+    "dev": "bun run --hot src/server.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "prettier": "^3.9.4",
+    "prettier-plugin-jsdoc": "^1.8.1"
+  },
+  "dependencies": {
+    "@typinghare/cli-core": "^2026.0.0",
+    "commander": "^15.0.0",
+    "hono": "^4.12.28",
+    "pino": "^10.3.1"
+  }
+}
