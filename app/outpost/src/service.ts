@@ -195,15 +195,17 @@ export async function uploadGameDirectory(
  * @param env The environment variables to use when running the script.
  * @param dropletPublicIpv4 The public IPv4 address of the droplet to start the
  *   server on.
+ * @param gameName The name of the game directory to start on the droplet.
  */
 export async function startMinecraftServer(
     env: Env,
-    dropletPublicIpv4: string
+    dropletPublicIpv4: string,
+    gameName: string
 ): Promise<void> {
     const [exitCode, _, stderr] = await runScript(
         env,
         'start-minecraft-server.sh',
-        { DROPLET_PUBLIC_IPV4: dropletPublicIpv4 }
+        { DROPLET_PUBLIC_IPV4: dropletPublicIpv4, GAME_NAME: gameName }
     )
     if (exitCode !== 0) {
         throw new Error(`Failed to start Minecraft server: ${stderr}`)
@@ -326,7 +328,7 @@ export async function createDropletAndStartMinecraftServer(
         `Uploaded game directory "${gameDir}" to the Minecraft droplet.`
     )
 
-    await startMinecraftServer(env, dropletPublicIpv4)
+    await startMinecraftServer(env, dropletPublicIpv4, gameName)
     logger.info(
         `Started Minecraft server (Public IPv4 Address: ${dropletPublicIpv4})`
     )
