@@ -1,0 +1,6 @@
+#! /usr/bin/env bun
+
+import { parseAsync } from '@typinghare/cli-core'
+import { program } from '../src/cli'
+
+await parseAsync(program)
