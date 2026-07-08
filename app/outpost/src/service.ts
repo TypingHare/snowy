@@ -1,5 +1,8 @@
 import path, { dirname } from 'node:path'
-import { DEFAULT_USER_DATA_TEMPLATE_FILE_PATH } from './constants'
+import {
+    BACKUP_DIR_EXTENSION,
+    DEFAULT_USER_DATA_TEMPLATE_FILE_PATH,
+} from './constants'
 import type { Env } from './env'
 import { runScript } from './script'
 import { mkdir } from 'node:fs/promises'
@@ -8,6 +11,7 @@ import { getAbsPath } from '@typinghare/cli-core'
 import { logger } from './logger'
 import { getDateTimeStringForBackup } from './helper'
 import { rename, rm, exists, cp } from 'node:fs/promises'
+import { readdir } from 'node:fs/promises'
 
 /**
  * Creates a user data file for the droplet using the provided template file.
@@ -252,7 +256,7 @@ export async function downloadGameDirectory(
     await mkdir(tempDirAbs, { recursive: true })
     const snapshotDir: string = path.join(
         tempDirAbs,
-        gameName + '.' + getDateTimeStringForBackup() + '.bak'
+        `${gameName}.${getDateTimeStringForBackup()}.${BACKUP_DIR_EXTENSION}`
     )
     const [exitCode, _, stderr] = await runScript(
         env,
@@ -268,6 +272,30 @@ export async function downloadGameDirectory(
     }
 
     return snapshotDir
+}
+
+/**
+ * Deletes all previous backup game directories.
+ *
+ * @param env The environment variables to use.
+ * @param gameName The name of the game for which backup game directories are
+ *   deleted.
+ */
+export async function deletePreviousBackupDirs(
+    env: Env,
+    gameName: string
+): Promise<void> {
+    const gameRootDirAbs = getAbsPath(env.gameRootDir)
+    const entries = await readdir(gameRootDirAbs, { withFileTypes: true })
+    const re = new RegExp(`^${gameName}\\.\\d+-\\d+\\.${BACKUP_DIR_EXTENSION}$`)
+    for (const entry of entries) {
+        if (entry.isDirectory() && re.test(entry.name)) {
+            await rm(path.join(gameRootDirAbs, entry.name), {
+                recursive: true,
+                force: true,
+            })
+        }
+    }
 }
 
 /**
@@ -372,6 +400,12 @@ export async function stopMinecraftServerAndDeleteDroplet(
     await deleteGameInstanceFile(env, gameName)
     logger.info(`Deleted game instance file for game "${gameName}".`)
 
+    // Delete all previous backup directories.
+    await deletePreviousBackupDirs(env, gameName)
+    logger.info(
+        `Deleted all previous backup directories for game "${gameName}".`
+    )
+
     // Rename the game directory to a backup directory with a timestamp
     const dirName = path.basename(snapshotDirPath)
     const gameRootDirAbs = getAbsPath(env.gameRootDir)
@@ -384,9 +418,7 @@ export async function stopMinecraftServerAndDeleteDroplet(
     )
 
     // Copy the snapshot directory into the game root directory, then remove the
-    // snapshot. `cp` (not `rename`) is used because the snapshot lives in the
-    // temp directory, which may be on a different filesystem — `rename` would
-    // fail with EXDEV across devices.
+    // snapshot.
     await cp(snapshotDirPath, path.join(gameRootDirAbs, gameName), {
         recursive: true,
     })

@@ -22,3 +22,6 @@ export const GAME_NAME_PATTERN = /^[A-Za-z0-9_-]+$/
 
 /** The command name used to invoke the CLI tool. */
 export const COMMAND_NAME = 'outpost'
+
+/** The extension for backup game directories. */
+export const BACKUP_DIR_EXTENSION = 'bak'

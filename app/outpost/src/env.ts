@@ -4,7 +4,7 @@ import { APP_NAME } from './constants'
 /** The default environment variables for the application. */
 const defaultEnv = {
     // Temporary directory to use for storing temporary files.
-    tempDir: '/tmp/snowy_outpost',
+    tempDir: '~/.cache/snowy_outpost',
 
     // State directory to use for storing persistent state files.
     stateDir: '~/.local/state/snowy_outpost',
