@@ -187,10 +187,12 @@
             />
 
             <div class="actions">
-                <button class="btn-start" onclick="control('start')">
+                <button id="btn-start" class="btn-start" onclick="control('start')">
                     Start
                 </button>
-                <button class="btn-stop" onclick="control('stop')">Stop</button>
+                <button id="btn-stop" class="btn-stop" onclick="control('stop')">
+                    Stop
+                </button>
             </div>
 
             <p id="message" class="message"></p>
@@ -209,15 +211,34 @@
             const WATCH_KEY = 'outpost:watch:' + GAME_NAME
             const REFRESH_INTERVAL_MS = 3000
 
-            function setCookie(name, value, days) {
-                const maxAge = days * 24 * 60 * 60
+            // After a successful Start we set a short-lived cookie. While it
+            // exists the Start button stays disabled so the user can't spam it.
+            const START_COOLDOWN_KEY = 'outpost:startcooldown:' + GAME_NAME
+            const START_COOLDOWN_SECONDS = 60
+
+            function setCookieSeconds(name, value, seconds) {
                 document.cookie =
                     name +
                     '=' +
                     encodeURIComponent(value) +
                     ';path=/;max-age=' +
-                    maxAge +
+                    seconds +
                     ';SameSite=Strict'
+            }
+
+            function setCookie(name, value, days) {
+                setCookieSeconds(name, value, days * 24 * 60 * 60)
+            }
+
+            // Reflect the current server status and Start cooldown in the button
+            // disabled states: Start is disabled while the server is running or
+            // the cooldown cookie exists; Stop is disabled while it's stopped.
+            function updateButtonStates() {
+                const running = STATUS_CLASS === 'running'
+                const cooldown = getCookie(START_COOLDOWN_KEY) !== null
+                document.getElementById('btn-start').disabled =
+                    running || cooldown
+                document.getElementById('btn-stop').disabled = !running
             }
 
             function getCookie(name) {
@@ -238,6 +259,16 @@
                 const saved = getCookie('token')
                 if (saved) {
                     document.getElementById('token').value = saved
+                }
+
+                updateButtonStates()
+                // Re-enable Start once the cooldown cookie expires, in case the
+                // page isn't reloaded in the meantime.
+                if (getCookie(START_COOLDOWN_KEY) !== null) {
+                    setTimeout(
+                        updateButtonStates,
+                        START_COOLDOWN_SECONDS * 1000
+                    )
                 }
 
                 const target = sessionStorage.getItem(WATCH_KEY)
@@ -285,6 +316,16 @@
                     if (response.ok) {
                         setCookie('token', token, 30)
 
+                        // A successful Start starts a 60s cooldown during which
+                        // the Start button stays disabled.
+                        if (action === 'start') {
+                            setCookieSeconds(
+                                START_COOLDOWN_KEY,
+                                '1',
+                                START_COOLDOWN_SECONDS
+                            )
+                        }
+
                         // Start (or Stop) runs in the background and can take a
                         // while. Watch for the target status and keep refreshing
                         // the page every 3s until it's reached.
@@ -300,7 +341,7 @@
                     message.textContent = 'Request failed: ' + error
                     message.className = 'message error'
                 } finally {
-                    buttons.forEach((b) => (b.disabled = false))
+                    updateButtonStates()
                 }
             }
         </script>
