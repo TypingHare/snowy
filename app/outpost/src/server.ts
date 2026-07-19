@@ -176,7 +176,7 @@ app.notFound((c) => {
     return c.json(
         {
             message:
-                `Available endpoints: (1) GET ${prefix}/ ` +
+                `Available endpoints: (1) GET ${prefix} ` +
                 `(2) POST ${prefix}/start ` +
                 `(3) POST ${prefix}/stop ` +
                 `(4) POST ${prefix}/backup`,
@@ -193,5 +193,12 @@ if (!port || isNaN(Number(port))) {
 
 export default {
     port: Number(port),
-    fetch: app.fetch,
+    fetch(req: Request) {
+        const url = new URL(req.url)
+        if (url.pathname === `${env.appPrefix}/`) {
+            url.pathname = env.appPrefix
+            return app.fetch(new Request(url.href, req))
+        }
+        return app.fetch(req)
+    },
 }
