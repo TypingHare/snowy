@@ -32,5 +32,6 @@ until ssh -i "$SSH_PRIVATE_KEY_FILE" \
     sleep 3
 done
 
-ssh -i "$SSH_PRIVATE_KEY_FILE" "$MINECRAFT_SERVER_USERNAME"@"$DROPLET_PUBLIC_IPV4" \
+ssh -i "$SSH_PRIVATE_KEY_FILE" \
+    "$MINECRAFT_SERVER_USERNAME"@"$DROPLET_PUBLIC_IPV4" \
     'cloud-init status --wait' >/dev/null 2>&1
