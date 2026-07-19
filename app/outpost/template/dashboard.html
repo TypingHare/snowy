@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{{ game_name }} — Server Status</title>
+        <title>{{ game_name }} — Dashboard</title>
         <style>
             :root {
                 --bg: #0f1115;
@@ -13,6 +13,7 @@
                 --border: #2a2e37;
                 --accent: #3ba55d;
                 --danger: #d83c3c;
+                --warning: #e0842e;
             }
 
             * {
@@ -100,6 +101,12 @@
                 font-weight: 600;
             }
 
+            .status .detail {
+                margin-left: auto;
+                font-size: 0.85rem;
+                font-weight: 600;
+            }
+
             label {
                 display: block;
                 margin-bottom: 6px;
@@ -147,6 +154,10 @@
                 background: var(--danger);
             }
 
+            .btn-backup {
+                background: var(--warning);
+            }
+
             .message {
                 margin: 18px 0 0;
                 min-height: 1.2em;
@@ -173,6 +184,10 @@
                     >{{ droplet_status }}</span
                 >
             </div>
+            <div class="status" {{ game_instance_status_hidden }}>
+                <span class="label">Game instance status</span>
+                <span class="detail">{{ game_instance_status }}</span>
+            </div>
             <div class="status">
                 <span class="label">IP address</span>
                 <span class="ip">{{ droplet_ip }}</span>
@@ -187,11 +202,26 @@
             />
 
             <div class="actions">
-                <button id="btn-start" class="btn-start" onclick="control('start')">
+                <button
+                    id="btn-start"
+                    class="btn-start"
+                    onclick="control('start')"
+                >
                     Start
                 </button>
-                <button id="btn-stop" class="btn-stop" onclick="control('stop')">
+                <button
+                    id="btn-stop"
+                    class="btn-stop"
+                    onclick="control('stop')"
+                >
                     Stop
+                </button>
+                <button
+                    id="btn-backup"
+                    class="btn-backup"
+                    onclick="control('backup')"
+                >
+                    Backup
                 </button>
             </div>
 
@@ -216,6 +246,11 @@
             const START_COOLDOWN_KEY = 'outpost:startcooldown:' + GAME_NAME
             const START_COOLDOWN_SECONDS = 60
 
+            // After a successful Backup we set a short-lived cookie. While it
+            // exists the Backup button stays disabled so the user can't spam it.
+            const BACKUP_COOLDOWN_KEY = 'outpost:backupcooldown:' + GAME_NAME
+            const BACKUP_COOLDOWN_SECONDS = 30
+
             function setCookieSeconds(name, value, seconds) {
                 document.cookie =
                     name +
@@ -230,15 +265,20 @@
                 setCookieSeconds(name, value, days * 24 * 60 * 60)
             }
 
-            // Reflect the current server status and Start cooldown in the button
+            // Reflect the current server status and cooldowns in the button
             // disabled states: Start is disabled while the server is running or
-            // the cooldown cookie exists; Stop is disabled while it's stopped.
+            // its cooldown cookie exists; Stop is disabled while it's stopped;
+            // Backup requires a running server and is disabled during its
+            // cooldown.
             function updateButtonStates() {
                 const running = STATUS_CLASS === 'running'
-                const cooldown = getCookie(START_COOLDOWN_KEY) !== null
+                const startCooldown = getCookie(START_COOLDOWN_KEY) !== null
+                const backupCooldown = getCookie(BACKUP_COOLDOWN_KEY) !== null
                 document.getElementById('btn-start').disabled =
-                    running || cooldown
+                    running || startCooldown
                 document.getElementById('btn-stop').disabled = !running
+                document.getElementById('btn-backup').disabled =
+                    !running || backupCooldown
             }
 
             function getCookie(name) {
@@ -270,6 +310,13 @@
                         START_COOLDOWN_SECONDS * 1000
                     )
                 }
+                // Likewise re-enable Backup once its cooldown cookie expires.
+                if (getCookie(BACKUP_COOLDOWN_KEY) !== null) {
+                    setTimeout(
+                        updateButtonStates,
+                        BACKUP_COOLDOWN_SECONDS * 1000
+                    )
+                }
 
                 const target = sessionStorage.getItem(WATCH_KEY)
                 if (target) {
@@ -277,10 +324,7 @@
                         // The server reached the desired state; stop refreshing.
                         sessionStorage.removeItem(WATCH_KEY)
                     } else {
-                        setTimeout(
-                            () => location.reload(),
-                            REFRESH_INTERVAL_MS
-                        )
+                        setTimeout(() => location.reload(), REFRESH_INTERVAL_MS)
                     }
                 }
             })
@@ -290,9 +334,13 @@
                 const message = document.getElementById('message')
                 const buttons = document.querySelectorAll('button')
 
+                const verbs = {
+                    start: 'Starting…',
+                    stop: 'Stopping…',
+                    backup: 'Backing up…',
+                }
                 message.className = 'message'
-                message.textContent =
-                    action === 'start' ? 'Starting…' : 'Stopping…'
+                message.textContent = verbs[action]
                 buttons.forEach((b) => (b.disabled = true))
 
                 try {
@@ -316,26 +364,42 @@
                     if (response.ok) {
                         setCookie('token', token, 30)
 
-                        // A successful Start starts a 60s cooldown during which
-                        // the Start button stays disabled.
-                        if (action === 'start') {
+                        if (action === 'backup') {
+                            // A successful Backup starts a 30s cooldown during
+                            // which the Backup button stays disabled. Backup
+                            // doesn't change the server status, so there's no
+                            // target to watch for and no page reload.
                             setCookieSeconds(
-                                START_COOLDOWN_KEY,
+                                BACKUP_COOLDOWN_KEY,
                                 '1',
-                                START_COOLDOWN_SECONDS
+                                BACKUP_COOLDOWN_SECONDS
+                            )
+                            setTimeout(
+                                updateButtonStates,
+                                BACKUP_COOLDOWN_SECONDS * 1000
+                            )
+                        } else {
+                            // A successful Start starts a 60s cooldown during
+                            // which the Start button stays disabled.
+                            if (action === 'start') {
+                                setCookieSeconds(
+                                    START_COOLDOWN_KEY,
+                                    '1',
+                                    START_COOLDOWN_SECONDS
+                                )
+                            }
+
+                            // Start (or Stop) runs in the background and can
+                            // take a while. Watch for the target status and keep
+                            // refreshing the page every 3s until it's reached.
+                            const target =
+                                action === 'start' ? 'running' : 'stopped'
+                            sessionStorage.setItem(WATCH_KEY, target)
+                            setTimeout(
+                                () => location.reload(),
+                                REFRESH_INTERVAL_MS
                             )
                         }
-
-                        // Start (or Stop) runs in the background and can take a
-                        // while. Watch for the target status and keep refreshing
-                        // the page every 3s until it's reached.
-                        const target =
-                            action === 'start' ? 'running' : 'stopped'
-                        sessionStorage.setItem(WATCH_KEY, target)
-                        setTimeout(
-                            () => location.reload(),
-                            REFRESH_INTERVAL_MS
-                        )
                     }
                 } catch (error) {
                     message.textContent = 'Request failed: ' + error

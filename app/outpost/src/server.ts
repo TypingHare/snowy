@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { Hono } from 'hono'
 import {
+    backupGameDirectoryFromDropletServer,
     createDropletAndStartMinecraftServer,
     gameDirExists,
     loadGameInstance,
@@ -9,8 +10,8 @@ import {
 import { env } from './env'
 import {
     CREDENTIAL_TOKEN_FILE_PATH,
+    DASHBOARD_TEMPLATE_FILE_PATH,
     GAME_NAME_PATTERN,
-    STATUS_TEMPLATE_FILE_PATH,
 } from './constants'
 
 // Anchor these paths to the package root (this file lives in `src/`) so they
@@ -20,10 +21,10 @@ const credentialTokenFilePath = path.join(
     '..',
     CREDENTIAL_TOKEN_FILE_PATH
 )
-const statusTemplateFilePath = path.join(
+const dashboardTemplateFilePath = path.join(
     import.meta.dir,
     '..',
-    STATUS_TEMPLATE_FILE_PATH
+    DASHBOARD_TEMPLATE_FILE_PATH
 )
 
 const app = new Hono().basePath(env.appPrefix)
@@ -81,9 +82,16 @@ app.post('/stop', async (c) => {
         return c.json({ error: 'Invalid game name.' }, 400)
     }
 
-    if (!(await loadGameInstance(env, gameName))) {
+    const gameInstance = await loadGameInstance(env, gameName)
+    if (!gameInstance) {
         return c.json(
             { error: `Game instance for "${gameName}" is not created.` },
+            400
+        )
+    }
+    if (gameInstance.status !== 'server-running') {
+        return c.json(
+            { error: `Game instance for "${gameName}" is not running.` },
             400
         )
     }
@@ -92,7 +100,36 @@ app.post('/stop', async (c) => {
     return c.json({ message: `Stopping Minecraft game "${gameName}".` })
 })
 
-app.get('/status', async (c) => {
+app.post('/backup', async (c) => {
+    const body = await c.req.json()
+    const gameName: string = body.game
+    if (!gameName) {
+        return c.json({ error: 'Game name is required.' }, 400)
+    }
+
+    if (!GAME_NAME_PATTERN.test(gameName)) {
+        return c.json({ error: 'Invalid game name.' }, 400)
+    }
+
+    const gameInstance = await loadGameInstance(env, gameName)
+    if (!gameInstance) {
+        return c.json(
+            { error: `Game instance for "${gameName}" is not created.` },
+            400
+        )
+    }
+    if (gameInstance.status !== 'server-running') {
+        return c.json(
+            { error: `Game instance for "${gameName}" is not running.` },
+            400
+        )
+    }
+
+    void backupGameDirectoryFromDropletServer(env, gameName)
+    return c.json({ message: `Backing up Minecraft game "${gameName}".` })
+})
+
+app.get('/', async (c) => {
     const gameName: string | undefined = c.req.query('game')
     if (!gameName) {
         return c.json({ error: 'Game name is required.' }, 400)
@@ -110,19 +147,28 @@ app.get('/status', async (c) => {
     }
 
     const gameInstance = await loadGameInstance(env, gameName)
-    const isGameStarted = gameInstance !== null
-    const statusPageTemplate = await Bun.file(statusTemplateFilePath).text()
-    const statusPageContent = statusPageTemplate
+    const status = gameInstance?.status ?? null
+    const isServerRunning = status === 'server-running'
+
+    // The "Game instance status" line is only meaningful while the instance is
+    // transitioning; hide it when the server is running or no instance exists.
+    const gameInstanceStatusHidden =
+        status === null || isServerRunning ? 'style="display: none"' : ''
+
+    const dashboardTemplate = await Bun.file(dashboardTemplateFilePath).text()
+    const dashboardContent = dashboardTemplate
         .replace(/{{ game_name }}/g, gameName)
         .replace(
             /{{ droplet_status }}/g,
-            isGameStarted ? 'Running' : 'Not Started'
+            isServerRunning ? 'Running' : 'Not Started'
         )
-        .replace(/{{ status_class }}/g, isGameStarted ? 'running' : 'stopped')
+        .replace(/{{ status_class }}/g, isServerRunning ? 'running' : 'stopped')
         .replace(/{{ droplet_ip }}/g, gameInstance?.dropletPublicIpv4 || '—')
+        .replace(/{{ game_instance_status }}/g, status ?? '')
+        .replace(/{{ game_instance_status_hidden }}/g, gameInstanceStatusHidden)
         .replace(/{{ app_prefix }}/g, env.appPrefix)
 
-    return c.html(statusPageContent)
+    return c.html(dashboardContent)
 })
 
 app.notFound((c) => {
@@ -130,9 +176,10 @@ app.notFound((c) => {
     return c.json(
         {
             message:
-                `Available endpoints: (1) GET ${prefix}/status ` +
-                `(2) POST ${prefix}/start` +
-                `(3) POST ${prefix}/stop`,
+                `Available endpoints: (1) GET ${prefix}/ ` +
+                `(2) POST ${prefix}/start ` +
+                `(3) POST ${prefix}/stop ` +
+                `(4) POST ${prefix}/backup`,
         },
         400
     )

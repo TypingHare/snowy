@@ -6,6 +6,7 @@ import {
     USAGE_ERROR,
 } from '@typinghare/cli-core'
 import {
+    backupGameDirectoryFromDropletServer,
     createDropletAndStartMinecraftServer,
     gameDirExists,
     loadGameInstance,
@@ -38,11 +39,11 @@ program
         }
 
         if (await loadGameInstance(env, gameName)) {
-            console.error(`Game "${gameName}" is already running.`)
+            console.error(`Game instance for "${gameName}" already exists.`)
             process.exit(GENERAL_ERROR)
         }
 
-        await createDropletAndStartMinecraftServer(env, game)
+        await createDropletAndStartMinecraftServer(env, gameName)
     })
 
 program
@@ -61,8 +62,13 @@ program
             process.exit(USAGE_ERROR)
         }
 
-        if (!(await loadGameInstance(env, gameName))) {
+        const gameInstance = await loadGameInstance(env, gameName)
+        if (!gameInstance) {
             console.error(`Game instance for "${gameName}" is not created.`)
+            process.exit(GENERAL_ERROR)
+        }
+        if (gameInstance.status !== 'server-running') {
+            console.error(`Game instance for "${gameName}" is not running.`)
             process.exit(GENERAL_ERROR)
         }
 
@@ -93,11 +99,39 @@ program
         const gameInstance = await loadGameInstance(env, gameName)
         console.log(`Game name: ${gameName}`)
         if (!gameInstance) {
-            console.log('Status: Not running')
+            console.log('Game instance is not created.')
         } else {
-            const { dropletId, dropletPublicIpv4 } = gameInstance
-            console.log('Status: Running')
+            const { dropletId, dropletPublicIpv4, status } = gameInstance
+            console.log(`Status: ${status}`)
             console.log(`Droplet ID: ${dropletId}`)
             console.log(`Droplet Public IPv4: ${dropletPublicIpv4}`)
         }
+    })
+
+program
+    .command('backup')
+    .description('Backup the Minecraft server data.')
+    .argument('<game>', 'The name of the Minecraft game to backup.')
+    .action(async (game: string) => {
+        const gameName = game.trim()
+        if (!gameName) {
+            console.error('Game name is required.')
+            process.exit(USAGE_ERROR)
+        }
+
+        if (!GAME_NAME_PATTERN.test(gameName)) {
+            console.error('Invalid game name.')
+            process.exit(USAGE_ERROR)
+        }
+
+        if (!(await gameDirExists(env, gameName))) {
+            console.error(`Game directory for "${gameName}" does not exist.`)
+            process.exit(GENERAL_ERROR)
+        }
+
+        const backupDirPath = await backupGameDirectoryFromDropletServer(
+            env,
+            gameName
+        )
+        console.log(`Backup for game "${gameName}" completed: ${backupDirPath}`)
     })

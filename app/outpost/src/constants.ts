@@ -4,12 +4,17 @@ export const APP_NAME = 'snowy_outpost'
 /** The version of the application. */
 export const VERSION = '2026.1.0'
 
-/** The path to the default user data template file. */
-export const DEFAULT_USER_DATA_TEMPLATE_FILE_PATH =
-    'template/minecraft-droplet-init.yaml'
+/** The name of the directory where template files are stored. */
+export const TEMPLATE_DIR = 'template'
 
-/** The path to the status template file. */
-export const STATUS_TEMPLATE_FILE_PATH = 'template/status.html'
+/** The name of the user data template file. */
+export const USER_DATA_TEMPLATE_FILE = 'minecraft-droplet-init.yaml'
+
+/** The path to the default user data template file. */
+export const DEFAULT_USER_DATA_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/${USER_DATA_TEMPLATE_FILE}`
+
+/** The path to the dashboard template file. */
+export const DASHBOARD_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/dashboard.html`
 
 /** The path to the credential token file. */
 export const CREDENTIAL_TOKEN_FILE_PATH = 'credential/token'
