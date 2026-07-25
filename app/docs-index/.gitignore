@@ -1,0 +1,21 @@
+# Developer local files
+.local/
+
+# Bun/Node.js libraries
+node_modules
+
+# Output
+/.svelte-kit/
+/build/
+
+# macOS system files
+.DS_Store
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
