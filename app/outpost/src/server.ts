@@ -10,7 +10,7 @@ import {
 import { env } from './env'
 import {
     CREDENTIAL_TOKEN_FILE_PATH,
-    DASHBOARD_TEMPLATE_FILE_PATH,
+    PANEL_TEMPLATE_FILE_PATH,
     GAME_NAME_PATTERN,
 } from './constants'
 
@@ -21,10 +21,10 @@ const credentialTokenFilePath = path.join(
     '..',
     CREDENTIAL_TOKEN_FILE_PATH
 )
-const dashboardTemplateFilePath = path.join(
+const panelTemplateFilePath = path.join(
     import.meta.dir,
     '..',
-    DASHBOARD_TEMPLATE_FILE_PATH
+    PANEL_TEMPLATE_FILE_PATH
 )
 
 const app = new Hono().basePath(env.appPrefix)
@@ -155,8 +155,8 @@ app.get('/', async (c) => {
     const gameInstanceStatusHidden =
         status === null || isServerRunning ? 'style="display: none"' : ''
 
-    const dashboardTemplate = await Bun.file(dashboardTemplateFilePath).text()
-    const dashboardContent = dashboardTemplate
+    const panelTemplate = await Bun.file(panelTemplateFilePath).text()
+    const panelContent = panelTemplate
         .replace(/{{ game_name }}/g, gameName)
         .replace(
             /{{ droplet_status }}/g,
@@ -168,7 +168,7 @@ app.get('/', async (c) => {
         .replace(/{{ game_instance_status_hidden }}/g, gameInstanceStatusHidden)
         .replace(/{{ app_prefix }}/g, env.appPrefix)
 
-    return c.html(dashboardContent)
+    return c.html(panelContent)
 })
 
 app.notFound((c) => {

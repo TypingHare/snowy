@@ -13,8 +13,8 @@ export const USER_DATA_TEMPLATE_FILE = 'minecraft-droplet-init.yaml'
 /** The path to the default user data template file. */
 export const DEFAULT_USER_DATA_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/${USER_DATA_TEMPLATE_FILE}`
 
-/** The path to the dashboard template file. */
-export const DASHBOARD_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/dashboard.html`
+/** The path to the panel template file. */
+export const PANEL_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/panel.html`
 
 /** The path to the credential token file. */
 export const CREDENTIAL_TOKEN_FILE_PATH = 'credential/token'
