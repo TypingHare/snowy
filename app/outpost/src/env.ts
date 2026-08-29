@@ -20,10 +20,10 @@ const defaultEnv = {
     // The username to use for connecting to the Minecraft server via SSH.
     minecraftServerUsername: 'james',
 
-    // The SSH private key file to use for connecting to the droplet.
+    // The SSH private key file to use for connecting to the Droplet.
     sshPrivateKeyFile: '~/.ssh/id_ed25519_snowy_outpost',
 
-    // The SSH public key file to use for creating the droplet.
+    // The SSH public key file to use for creating the Droplet.
     sshPublicKeyFile: '~/.ssh/id_ed25519_snowy_outpost.pub',
 
     // The root directory storing all the Minecraft game directories.

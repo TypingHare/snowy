@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# This script uploads the game directory to the droplet using scp.
+# This script uploads the game directory to the Droplet using scp.
 #
 # It assumes that the following environment variables are set:
 #   - SSH_PRIVATE_KEY_FILE: The path to the SSH private key file for
 #     authentication.
 #   - GAME_DIR: The path to the game directory to be uploaded.
 #   - MINECRAFT_SERVER_USERNAME: The username for the Minecraft server on the
-#     droplet.
-#   - DROPLET_PUBLIC_IPV4: The public IPv4 address of the droplet.
+#     Droplet.
+#   - DROPLET_PUBLIC_IPV4: The public IPv4 address of the Droplet.
 
 set -euo pipefail
 

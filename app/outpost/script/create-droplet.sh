@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 
-# This script creates a new DigitalOcean droplet.
+# This script creates a new DigitalOcean Droplet.
 #
 # It assumes that the following environment variables are set:
-#   - DROPLET_NAME: The name of the droplet to create.
+#   - DROPLET_NAME: The name of the Droplet to create.
 #   - DROPLET_PROJECT_ID: The ID of the DigitalOcean project to create the
-#     droplet in.
-#   - DROPLET_VPC_UUID: The UUID of the VPC to create the droplet in.
-#   - DROPLET_REGION: The region to create the droplet in.
-#   - DROPLET_SIZE: The size of the droplet to create.
-#   - DROPLET_SSH_KEY_ID: The ID of the SSH key to use for the droplet.
-#   - USER_DATA_FILE: The path to the user data file to use for the droplet.
+#     Droplet in.
+#   - DROPLET_VPC_UUID: The UUID of the VPC to create the Droplet in.
+#   - DROPLET_REGION: The region to create the Droplet in.
+#   - DROPLET_SIZE: The size of the Droplet to create.
+#   - DROPLET_SSH_KEY_ID: The ID of the SSH key to use for the Droplet.
+#   - USER_DATA_FILE: The path to the user data file to use for the Droplet.
 #
 # It also assumes that the DigitalOcean CLI (doctl) is installed and configured
 # with an API token.
 #
-# This script will print the droplet ID and public IPv4 address of the newly
-# created droplet.
+# This script will print the Droplet ID and public IPv4 address of the newly
+# created Droplet.
 
 set -euo pipefail
 

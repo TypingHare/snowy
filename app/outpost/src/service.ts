@@ -20,7 +20,7 @@ export function getTemplateDirPath(): string {
 }
 
 /**
- * Creates a user data file for the droplet using the provided template file.
+ * Creates a user data file for the Droplet using the provided template file.
  *
  * @param env The environment variables to use when running the script.
  * @param templateFilePath The path to the user data template file to use when
@@ -54,14 +54,14 @@ export async function createUserDataFile(
 }
 
 /**
- * Creates a new droplet and returns its ID and public IPv4 address.
+ * Creates a new Droplet and returns its ID and public IPv4 address.
  *
- * This function runs the {@link script/create-droplet.sh} script to create a new
- * droplet using the provided user data file.
+ * This function runs {@link script/create-droplet.sh} to create a new Droplet
+ * using the provided user data file.
  *
  * @param env The environment variables to use when running the script.
  * @param userDataFilePath The path to the user data file to use when creating
- *   the droplet.
+ *   the Droplet.
  */
 export async function createDroplet(
     env: Env,
@@ -91,6 +91,14 @@ export async function createDroplet(
     return [dropletId, dropletPublicIpv4]
 }
 
+/**
+ * Returns the absolute path to the game instance file for the specified game
+ * name.
+ *
+ * @param env The environment variables to use when running the script.
+ * @param gameName The name of the game instance.
+ * @returns The absolute path to the game instance file.
+ */
 export function getGameInstanceFilePath(env: Env, gameName: string): string {
     const stateDirAbsolute = getAbsPath(env.stateDir)
     return path.join(stateDirAbsolute, `${gameName}.json`)
@@ -100,7 +108,7 @@ export function getGameInstanceFilePath(env: Env, gameName: string): string {
  * Creates a new game instance and saves it to the state directory.
  *
  * This function creates a new game instance with the specified name and status,
- * and saves it to a JSON file in the state directory. The droplet ID and public
+ * and saves it to a JSON file in the state directory. The Droplet ID and public
  * IPv4 address are initialized as empty strings.
  *
  * @param env The environment variables to use when running the script.
@@ -191,13 +199,13 @@ export async function updateGameInstance(
 }
 
 /**
- * Waits for the droplet to be ready to accept SSH connections.
+ * Waits for the Droplet to be ready to accept SSH connections.
  *
- * This function runs the {@link script/await-droplet.sh} script to wait for the
- * droplet to be ready to accept SSH connections.
+ * This function runs {@link script/await-droplet.sh} to wait for the Droplet to
+ * be ready to accept SSH connections.
  *
  * @param env The environment variables to use when running the script.
- * @param dropletPublicIpv4 The public IPv4 address of the droplet to wait for.
+ * @param dropletPublicIpv4 The public IPv4 address of the Droplet to wait for.
  */
 export async function awaitDroplet(
     env: Env,
@@ -212,13 +220,13 @@ export async function awaitDroplet(
 }
 
 /**
- * Uploads the game directory to the droplet.
+ * Uploads the game directory to the Droplet.
  *
- * This function runs the {@link script/upload-game-directory.sh} script to
- * upload the game directory to the droplet.
+ * This function runs {@link script/upload-game-directory.sh} to upload the game
+ * directory to the Droplet.
  *
  * @param env The environment variables to use when running the script.
- * @param dropletPublicIpv4 The public IPv4 address of the droplet to upload to.
+ * @param dropletPublicIpv4 The public IPv4 address of the Droplet to upload to.
  * @param gameDir The path to the game directory to upload.
  */
 export async function uploadGameDirectory(
@@ -240,15 +248,15 @@ export async function uploadGameDirectory(
 }
 
 /**
- * Starts the Minecraft server on the droplet.
+ * Starts the Minecraft server on the Droplet.
  *
- * This function runs the {@link script/start-minecraft-server.sh} script to
- * start the Minecraft server on the droplet.
+ * This function runs {@link script/start-minecraft-server.sh} to start the
+ * Minecraft server on the Droplet.
  *
  * @param env The environment variables to use when running the script.
- * @param dropletPublicIpv4 The public IPv4 address of the droplet to start the
+ * @param dropletPublicIpv4 The public IPv4 address of the Droplet to start the
  *   server on.
- * @param gameName The name of the game directory to start on the droplet.
+ * @param gameName The name of the game directory to start on the Droplet.
  */
 export async function startMinecraftServer(
     env: Env,
@@ -266,13 +274,13 @@ export async function startMinecraftServer(
 }
 
 /**
- * Stops the Minecraft server on the droplet.
+ * Stops the Minecraft server on the Droplet.
  *
- * This function runs the {@link script/stop-minecraft-server.sh} script to stop
- * the Minecraft server on the droplet.
+ * This function runs {@link script/stop-minecraft-server.sh} to stop the
+ * Minecraft server on the Droplet.
  *
  * @param env The environment variables to use when running the script.
- * @param dropletPublicIpv4 The public IPv4 address of the droplet to stop the
+ * @param dropletPublicIpv4 The public IPv4 address of the Droplet to stop the
  *   server on.
  */
 export async function stopMinecraftServer(
@@ -290,13 +298,13 @@ export async function stopMinecraftServer(
 }
 
 /**
- * Downloads the game directory from the droplet to a local snapshot directory.
+ * Downloads the game directory from the Droplet to a local snapshot directory.
  *
- * This function runs the {@link script/download-game-directory.sh} script to
- * download the game directory from the droplet to a local snapshot directory.
+ * This function runs {@link script/download-game-directory.sh} to download the
+ * game directory from the Droplet to a local snapshot directory.
  *
  * @param env The environment variables to use when running the script.
- * @param dropletPublicIpv4 The public IPv4 address of the droplet to download
+ * @param dropletPublicIpv4 The public IPv4 address of the Droplet to download
  *   from.
  * @param gameName The name of the game directory to download.
  * @returns The path to the snapshot directory that the game directory is
@@ -358,13 +366,13 @@ export async function deletePreviousBackupDirs(
 }
 
 /**
- * Deletes the droplet.
+ * Deletes the Droplet.
  *
- * This function runs the {@link script/delete-droplet.sh} script to delete the
- * droplet with the specified ID.
+ * This function runs {@link script/delete-droplet.sh} script to delete the
+ * Droplet with the specified ID.
  *
  * @param env The environment variables to use when running the script.
- * @param dropletId The ID of the droplet to delete.
+ * @param dropletId The ID of the Droplet to delete.
  */
 export async function deleteDroplet(
     env: Env,
@@ -379,13 +387,13 @@ export async function deleteDroplet(
 }
 
 /**
- * Creates droplet and start Minecraft server.
+ * Creates Droplet and start Minecraft server.
  *
- * This function creates a new droplet, waits for it to be ready, uploads the
- * game directory, and starts the Minecraft server on the droplet.
+ * This function creates a new Droplet, waits for it to be ready, uploads the
+ * game directory, and starts the Minecraft server on the Droplet.
  *
  * Note that if any errors arise over the course of this function, both the game
- * instance file and the Minecraft droplet will not be deleted. Users need to
+ * instance file and the Minecraft Droplet will not be deleted. Users need to
  * contact the Outpost maintainers to fix the issues.
  *
  * @param env The environment variables to use when running the script.
@@ -444,7 +452,7 @@ export async function createDropletAndStartMinecraftServer(
 }
 
 /**
- * Backs up the game directory from the droplet server.
+ * Backs up the game directory from the Droplet server.
  *
  * The backup directory name is in the format of
  * `${gameName}.${timestamp}.manual.${BACKUP_DIR_EXTENSION}`.

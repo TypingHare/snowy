@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script waits for a droplet to be ready.
+# This script waits for a Droplet to be ready.
 #
 # It first waits for the SSH service to be available, and then waits for
 # cloud-init to finish.
@@ -10,12 +10,12 @@
 #   - MINECRAFT_SERVER_USERNAME: The username to connect as. The SSH key is
 #     installed onto this user by cloud-init (root has no key), so we must wait
 #     on this user rather than root.
-#   - DROPLET_PUBLIC_IPV4: The public IPv4 address of the droplet.
+#   - DROPLET_PUBLIC_IPV4: The public IPv4 address of the Droplet.
 
 set -euo pipefail
 
 # Wait for SSH to accept the key, but give up after a bounded number of attempts
-# so an unreachable droplet fails loudly instead of hanging forever.
+# so an unreachable Droplet fails loudly instead of hanging forever.
 max_attempts=60
 attempt=0
 until ssh -i "$SSH_PRIVATE_KEY_FILE" \
