@@ -37,6 +37,9 @@ const defaultEnv = {
 
     // The application prefix to use for Hono routes.
     appPrefix: '/outpost',
+
+    // The URL to the repository of the Outpost project.
+    repositoryUrl: 'https://github.com/TypingHare/snowy/tree/main/app/outpost'
 }
 
 export type Env = Record<keyof typeof defaultEnv, string>

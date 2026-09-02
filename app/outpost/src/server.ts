@@ -12,6 +12,7 @@ import {
     CREDENTIAL_TOKEN_FILE_PATH,
     PANEL_TEMPLATE_FILE_PATH,
     GAME_NAME_PATTERN,
+    GITHUB_REDIRECT_TEMPLATE_FILE_PATH,
 } from './constants'
 
 // Anchor these paths to the package root (this file lives in `src/`) so they
@@ -25,6 +26,11 @@ const panelTemplateFilePath = path.join(
     import.meta.dir,
     '..',
     PANEL_TEMPLATE_FILE_PATH
+)
+const githubRedirectFilePath = path.join(
+    import.meta.dir,
+    '..',
+    GITHUB_REDIRECT_TEMPLATE_FILE_PATH
 )
 
 const app = new Hono().basePath(env.appPrefix)
@@ -127,6 +133,15 @@ app.post('/backup', async (c) => {
 
     void backupGameDirectoryFromDropletServer(env, gameName)
     return c.json({ message: `Backing up Minecraft game "${gameName}".` })
+})
+
+app.get('/repo', async (c) => {
+    const repositoryUrl = env.repositoryUrl
+    const githubRedirectTemplate = await Bun.file(githubRedirectFilePath ).text()
+    const githubRedirectContent = githubRedirectTemplate
+        .replace(/{{ repository_url }}/g, repositoryUrl)
+
+    return c.html(githubRedirectContent)
 })
 
 app.get('/', async (c) => {

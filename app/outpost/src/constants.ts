@@ -16,6 +16,8 @@ export const DEFAULT_USER_DATA_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/${USER_DATA
 /** The path to the panel template file. */
 export const PANEL_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/panel.html`
 
+export const GITHUB_REDIRECT_TEMPLATE_FILE_PATH = `${TEMPLATE_DIR}/github-redirect.html`
+
 /** The path to the credential token file. */
 export const CREDENTIAL_TOKEN_FILE_PATH = 'credential/token'
 
